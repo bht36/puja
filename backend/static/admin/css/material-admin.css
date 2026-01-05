@@ -1,0 +1,352 @@
+/* Puja Pasal Admin - Custom Design */
+
+:root {
+    --primary: #8B7355;
+    --secondary: #D4AF37;
+    --danger: #C41E3A;
+    --success: #2D5016;
+    --warning: #FF9800;
+    --bg-main: #F0EDE5;
+    --text-main: #1E1C25;
+    --card-bg: #FFFFFF;
+    --card-shadow: 0 2px 8px rgba(30, 28, 37, 0.08);
+    --hover-shadow: 0 4px 12px rgba(30, 28, 37, 0.12);
+}
+
+/* Base Layout */
+body {
+    font-family: 'Inter', 'Noto Sans', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+
+#content {
+    padding: 20px;
+}
+
+/* Card Styling */
+.module, .results {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    border: none;
+    margin-bottom: 20px;
+}
+
+/* User List Table */
+#result_list {
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#result_list thead th {
+    background: var(--primary);
+    color: white;
+    font-weight: 500;
+    padding: 16px;
+    border: none;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+#result_list tbody tr {
+    transition: all 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+#result_list tbody tr:hover {
+    background: #f8f9fa;
+    box-shadow: var(--hover-shadow);
+    transform: translateY(-1px);
+}
+
+#result_list td {
+    padding: 16px;
+    vertical-align: middle;
+}
+
+/* Avatar */
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 16px;
+    margin-right: 12px;
+}
+
+/* Badges */
+.badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.badge-admin { background: #ffebee; color: var(--danger); }
+.badge-staff { background: #e3f2fd; color: var(--primary); }
+.badge-user { background: #f5f5f5; color: var(--gray); }
+.badge-active { background: #e8f5e9; color: var(--success); }
+.badge-inactive { background: #fff3e0; color: var(--warning); }
+
+/* Search Bar */
+#toolbar {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 20px;
+}
+
+#toolbar form input[type="text"] {
+    padding: 10px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 300px;
+    transition: all 0.2s;
+}
+
+#toolbar form input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+/* Filters */
+#changelist-filter {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    border: none;
+    padding: 16px;
+}
+
+#changelist-filter h2 {
+    background: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    margin: -16px -16px 16px -16px;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#changelist-filter h3 {
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#changelist-filter li {
+    padding: 8px 0;
+}
+
+#changelist-filter a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+#changelist-filter a:hover {
+    color: var(--primary);
+}
+
+#changelist-filter li.selected a {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+/* Pagination */
+.paginator {
+    padding: 16px;
+    text-align: center;
+}
+
+.paginator a, .paginator span {
+    padding: 8px 12px;
+    margin: 0 4px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.paginator a:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.paginator .this-page {
+    background: var(--primary);
+    color: white;
+    font-weight: 500;
+}
+
+/* Form Cards */
+.form-row {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.form-row:last-child {
+    border-bottom: none;
+}
+
+fieldset.module {
+    margin-bottom: 20px;
+}
+
+fieldset.module h2 {
+    background: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    margin: 0;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+fieldset.collapsed h2 {
+    border-radius: 8px;
+}
+
+/* Toggle Switch */
+input[type="checkbox"].toggle {
+    appearance: none;
+    width: 48px;
+    height: 24px;
+    background: #ccc;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+input[type="checkbox"].toggle:checked {
+    background: var(--success);
+}
+
+input[type="checkbox"].toggle::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: 2px;
+    transition: left 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+input[type="checkbox"].toggle:checked::before {
+    left: 26px;
+}
+
+/* Buttons */
+.submit-row input, .button, input[type="submit"] {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.submit-row input:hover, .button:hover, input[type="submit"]:hover {
+    background: #1976D2;
+    box-shadow: var(--hover-shadow);
+}
+
+.deletelink {
+    background: var(--danger) !important;
+}
+
+.deletelink:hover {
+    background: #D32F2F !important;
+}
+
+/* Action Bar */
+.actions {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 16px;
+}
+
+.actions select {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.actions button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    background: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 20px;
+}
+
+.breadcrumbs a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+/* Help Text */
+.help {
+    color: #666;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Error Messages */
+.errorlist {
+    background: #ffebee;
+    color: var(--danger);
+    padding: 12px;
+    border-radius: 4px;
+    list-style: none;
+    margin: 8px 0;
+}
+
+/* Success Messages */
+.success {
+    background: #e8f5e9;
+    color: var(--success);
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}

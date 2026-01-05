@@ -1,22 +1,25 @@
-"""
-URL configuration for puja project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', include('inventory.urls')),
+    path('api/auth/', include('authentication.urls')),
 ]
+
+# API URLs (without namespace to avoid conflict)
+from inventory import views as inventory_views
+urlpatterns += [
+    path('api/product-grids/', inventory_views.api_product_grids, name='api_product_grids'),
+    path('api/categories/', inventory_views.api_categories, name='api_categories'),
+    path('api/products/', inventory_views.api_products, name='api_products'),
+    path('api/products/<int:product_id>/', inventory_views.api_product_detail, name='api_product_detail'),
+    path('api/bundles/', inventory_views.api_bundles, name='api_bundles'),
+    path('api/bundles/<int:bundle_id>/', inventory_views.api_bundle_detail, name='api_bundle_detail'),
+    path('api/scrap/submit/', inventory_views.api_scrap_submit, name='api_scrap_submit'),
+]
+
+# Serve media files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

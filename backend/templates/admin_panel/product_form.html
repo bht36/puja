@@ -1,0 +1,71 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{{ action }} Product{% endblock %}
+{% block page_title %}{{ action }} Product{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow-md p-8">
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+                    <input type="text" name="name" value="{{ product.name|default:'' }}" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Price (NPR) *</label>
+                    <input type="number" name="price" value="{{ product.price|default:'' }}" step="0.01" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea name="description" rows="3"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">{{ product.description|default:'' }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Product Grid *</label>
+                <select name="product_grid" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    <option value="">Select Product Grid</option>
+                    {% for grid in grids %}
+                    <option value="{{ grid.id }}" {% if product.product_grid_id == grid.id %}selected{% endif %}>
+                        {{ grid.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+                <input type="number" name="stock" value="{{ product.stock|default:0 }}" min="0"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Product Image *</label>
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-32 h-32 object-cover mb-2 rounded">
+                {% endif %}
+                <input type="file" name="image" accept="image/*" {% if action == 'Create' %}required{% endif %}
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+            </div>
+
+            <div class="flex space-x-4 pt-6 border-t">
+                <button type="submit" class="flex-1 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-opacity-90">
+                    {{ action }} Product
+                </button>
+                <a href="{% url 'admin_panel:products' %}" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-center">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}User Details{% endblock %}
+{% block page_title %}User Details{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="bg-gradient-to-r from-primary to-secondary p-8 text-white">
+            <div class="flex items-center">
+                {% if user.profile_image %}
+                <img src="{{ user.profile_image.url }}" alt="{{ user.first_name }}" class="w-24 h-24 rounded-full border-4 border-white mr-6">
+                {% else %}
+                <div class="w-24 h-24 rounded-full bg-white text-primary flex items-center justify-center mr-6 text-3xl font-bold">
+                    {{ user.first_name.0 }}{{ user.last_name.0 }}
+                </div>
+                {% endif %}
+                <div>
+                    <h2 class="text-3xl font-bold">{{ user.first_name }} {{ user.last_name }}</h2>
+                    <p class="text-white text-opacity-90">{{ user.email }}</p>
+                    <div class="flex space-x-2 mt-2">
+                        {% if user.is_superuser %}
+                        <span class="px-3 py-1 bg-red-500 rounded-full text-sm">Admin</span>
+                        {% elif user.is_staff %}
+                        <span class="px-3 py-1 bg-blue-500 rounded-full text-sm">Staff</span>
+                        {% endif %}
+                        {% if user.is_active %}
+                        <span class="px-3 py-1 bg-green-500 rounded-full text-sm">Active</span>
+                        {% endif %}
+                        {% if user.is_verified %}
+                        <span class="px-3 py-1 bg-blue-400 rounded-full text-sm">Verified</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Username</h3>
+                    <p class="text-lg text-textmain">{{ user.username }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Phone</h3>
+                    <p class="text-lg text-textmain">{{ user.phone|default:"—" }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">City</h3>
+                    <p class="text-lg text-textmain">{{ user.city|default:"—" }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Postal Code</h3>
+                    <p class="text-lg text-textmain">{{ user.postal_code|default:"—" }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Date of Birth</h3>
+                    <p class="text-lg text-textmain">{{ user.date_of_birth|date:"M d, Y"|default:"—" }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Gender</h3>
+                    <p class="text-lg text-textmain">{{ user.get_gender_display|default:"—" }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Joined</h3>
+                    <p class="text-lg text-textmain">{{ user.date_joined|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Last Login</h3>
+                    <p class="text-lg text-textmain">{{ user.last_login|date:"M d, Y"|default:"Never" }}</p>
+                </div>
+            </div>
+
+            {% if user.address %}
+            <div class="mb-8">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2">Address</h3>
+                <p class="text-lg text-textmain">{{ user.address }}</p>
+            </div>
+            {% endif %}
+
+            <div class="flex space-x-4">
+                <a href="{% url 'admin_panel:user_edit' user.id %}" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition">
+                    Edit User
+                </a>
+                <a href="{% url 'admin_panel:users' %}" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

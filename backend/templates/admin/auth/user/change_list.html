@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'admin/css/material-admin.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'admin/js/material-admin.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+    <!-- Material Design User List -->
+    <div id="content-main">
+        {{ block.super }}
+    </div>
+{% endblock %}

@@ -1,0 +1,8 @@
+Django==5.2.7
+djangorestframework
+django-cors-headers
+python-dotenv
+djangorestframework-simplejwt
+psycopg2-binary
+python-docx
+Pillow

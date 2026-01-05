@@ -1,0 +1,131 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Inventory{% endblock %}
+{% block page_title %}Inventory Management{% endblock %}
+
+{% block content %}
+<!-- Product Grids Section -->
+<div class="mb-8">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-700">Product Grids</h3>
+        <a href="{% url 'admin_panel:grid_create' %}" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+            + Add Grid
+        </a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for grid in grids %}
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <h4 class="font-semibold text-gray-900">{{ grid.title }}</h4>
+                    <p class="text-sm text-gray-500">Order: {{ grid.order }}</p>
+                </div>
+                <span class="px-2 py-1 {% if grid.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %} rounded text-xs">
+                    {% if grid.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+            <div class="flex space-x-2 mt-3">
+                <a href="{% url 'admin_panel:grid_edit' grid.id %}" class="flex-1 px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded hover:bg-blue-100 text-center">
+                    Edit
+                </a>
+                <a href="{% url 'admin_panel:grid_delete' grid.id %}" class="flex-1 px-3 py-1 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100 text-center">
+                    Delete
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-8 bg-white rounded-lg">
+            <p class="text-gray-500">No product grids yet</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Products Section -->
+<div class="mb-6 flex justify-between items-center">
+    <div>
+        <h3 class="text-lg font-semibold text-gray-700">Products</h3>
+    </div>
+    <a href="{% url 'admin_panel:product_create' %}" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition shadow-md">
+        + Add Product
+    </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Image</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Product Name</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Category</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Price</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Stock</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for product in products %}
+            <tr class="hover:bg-bgmain transition">
+                <td class="px-6 py-4">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-12 h-12 object-cover rounded-lg">
+                    {% else %}
+                    <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <p class="font-medium text-textmain">{{ product.name }}</p>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">{{ product.category.name }}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <p class="font-semibold text-primary">Rs. {{ product.price }}</p>
+                </td>
+                <td class="px-6 py-4">
+                    <p class="{% if product.stock < 10 %}text-red-600{% else %}text-green-600{% endif %} font-medium">
+                        {{ product.stock }}
+                    </p>
+                </td>
+                <td class="px-6 py-4">
+                    {% if product.is_active %}
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Active</span>
+                    {% else %}
+                    <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex space-x-2">
+                        <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </button>
+                        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    <p class="text-lg font-medium">No products yet</p>
+                    <p class="text-sm">Add your first product to get started</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

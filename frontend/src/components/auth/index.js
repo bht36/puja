@@ -1,0 +1,9 @@
+export { default as Login } from './Login';
+export { default as Register } from './Register';
+export { default as VerifyOTP } from './VerifyOTP';
+export { default as ForgotPassword } from './ForgotPassword';
+export { default as ForgotPasswordOTP } from './ForgotPasswordOTP';
+export { default as ResetPasswordNew } from './ResetPasswordNew';
+export { default as ProtectedRoute } from './ProtectedRoute';
+export { default as UserProfile } from './UserProfile';
+export { default as EditProfile } from './EditProfile';
