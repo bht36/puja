@@ -1,108 +1,179 @@
-{% extends 'admin_panel/base.html' %}
-
-{% block title %}Users{% endblock %}
-{% block page_title %}User Management{% endblock %}
-
-{% block content %}
+{% extends 'admin_panel/base.html' %} {% block title %}Users{% endblock %} {%
+block page_title %}User Management{% endblock %} {% block content %}
 <div class="mb-6 flex justify-between items-center">
-    <h3 class="text-lg font-semibold text-gray-700">Manage all users</h3>
-    <a href="{% url 'admin_panel:user_create' %}" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition shadow-md">
-        + Add User
-    </a>
+  <h3 class="text-lg font-semibold text-gray-700">Manage all users</h3>
+  <a
+    href="{% url 'admin_panel:user_create' %}"
+    class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition shadow-md"
+  >
+    + Add User
+  </a>
 </div>
 
 {% if messages %}
 <div class="mb-4">
-    {% for message in messages %}
-    <div class="px-4 py-3 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-        {{ message }}
-    </div>
-    {% endfor %}
+  {% for message in messages %}
+  <div
+    class="px-4 py-3 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}"
+  >
+    {{ message }}
+  </div>
+  {% endfor %}
 </div>
 {% endif %}
 
 <div class="bg-white rounded-xl shadow-md overflow-hidden">
-    <table class="w-full">
-        <thead class="bg-primary text-white">
-            <tr>
-                <th class="px-6 py-4 text-left text-sm font-semibold">User</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold">Email</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold">Phone</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold">Joined</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200">
-            {% for user in users %}
-            <tr class="hover:bg-bgmain transition">
-                <td class="px-6 py-4">
-                    <div class="flex items-center">
-                        {% if user.profile_image %}
-                        <img src="{{ user.profile_image.url }}" alt="{{ user.first_name }}" class="w-10 h-10 rounded-full mr-3">
-                        {% else %}
-                        <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mr-3 font-semibold">
-                            {{ user.first_name.0 }}{{ user.last_name.0 }}
-                        </div>
-                        {% endif %}
-                        <div>
-                            <p class="font-medium text-textmain">{{ user.first_name }} {{ user.last_name }}</p>
-                            {% if user.is_superuser %}
-                            <span class="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full">Admin</span>
-                            {% elif user.is_staff %}
-                            <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Staff</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </td>
-                <td class="px-6 py-4">
-                    <p class="text-sm text-gray-700">{{ user.email }}</p>
-                </td>
-                <td class="px-6 py-4">
-                    <p class="text-sm text-gray-700">{{ user.phone|default:"—" }}</p>
-                </td>
-                <td class="px-6 py-4">
-                    <p class="text-sm text-gray-700">{{ user.date_joined|date:"M d, Y" }}</p>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="flex flex-col space-y-1">
-                        {% if user.is_active %}
-                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs text-center">Active</span>
-                        {% else %}
-                        <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs text-center">Inactive</span>
-                        {% endif %}
-                        {% if user.is_verified %}
-                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs text-center">Verified</span>
-                        {% endif %}
-                    </div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="flex space-x-2">
-                        <a href="{% url 'admin_panel:user_view' user.id %}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                        </a>
-                        <a href="{% url 'admin_panel:user_edit' user.id %}" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                        </a>
-                        <a href="{% url 'admin_panel:user_delete' user.id %}" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </a>
-                    </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="px-6 py-12 text-center text-gray-500">No users found</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <table class="w-full">
+    <thead class="bg-primary text-white">
+      <tr>
+        <th class="px-6 py-4 text-left text-sm font-semibold">User</th>
+        <th class="px-6 py-4 text-left text-sm font-semibold">Email</th>
+        <th class="px-6 py-4 text-left text-sm font-semibold">Phone</th>
+        <th class="px-6 py-4 text-left text-sm font-semibold">Joined</th>
+        <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+        <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      {% for user in users %}
+      <tr class="hover:bg-bgmain transition">
+        <td class="px-6 py-4">
+          <div class="flex items-center">
+            {% if user.profile_image %}
+            <img
+              src="{{ user.profile_image.url }}"
+              alt="{{ user.first_name }}"
+              class="w-10 h-10 rounded-full mr-3"
+            />
+            {% else %}
+            <div
+              class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mr-3 font-semibold"
+            >
+              {{ user.first_name.0 }}{{ user.last_name.0 }}
+            </div>
+            {% endif %}
+            <div>
+              <p class="font-medium text-textmain">
+                {{ user.first_name }} {{ user.last_name }}
+              </p>
+              {% if user.is_superuser %}
+              <span
+                class="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full"
+                >Admin</span
+              >
+              {% elif user.is_staff %}
+              <span
+                class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full"
+                >Staff</span
+              >
+              {% endif %}
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4">
+          <p class="text-sm text-gray-700">{{ user.email }}</p>
+        </td>
+        <td class="px-6 py-4">
+          <p class="text-sm text-gray-700">{{ user.phone|default:"—" }}</p>
+        </td>
+        <td class="px-6 py-4">
+          <p class="text-sm text-gray-700">
+            {{ user.date_joined|date:"M d, Y" }}
+          </p>
+        </td>
+        <td class="px-6 py-4">
+          <div class="flex flex-col space-y-1">
+            {% if user.is_active %}
+            <span
+              class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs text-center"
+              >Active</span
+            >
+            {% else %}
+            <span
+              class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs text-center"
+              >Inactive</span
+            >
+            {% endif %} {% if user.is_verified %}
+            <span
+              class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs text-center"
+              >Verified</span
+            >
+            {% endif %}
+          </div>
+        </td>
+        <td class="px-6 py-4">
+          <div class="flex space-x-2">
+            <a
+              href="{% url 'admin_panel:user_view' user.id %}"
+              class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                ></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                ></path>
+              </svg>
+            </a>
+            <a
+              href="{% url 'admin_panel:user_edit' user.id %}"
+              class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                ></path>
+              </svg>
+            </a>
+            <a
+              href="{% url 'admin_panel:user_delete' user.id %}"
+              class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                ></path>
+              </svg>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+          No users found
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}

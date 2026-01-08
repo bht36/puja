@@ -1,6 +1,7 @@
 {% extends 'admin_panel/base.html' %}
 
 {% block title %}Scrap Review{% endblock %}
+
 {% block page_title %}Scrap Submission Review{% endblock %}
 
 {% block content %}
@@ -33,6 +34,14 @@
                     <span class="text-gray-600">Date:</span>
                     <span class="font-medium">{{ scrap.submitted_at|date:"M d, Y" }}</span>
                 </div>
+                {% if scrap.latitude and scrap.longitude %}
+                <div class="text-sm">
+                    <span class="text-gray-600">📍 Location:</span>
+                    <a href="https://www.google.com/maps?q={{ scrap.latitude }},{{ scrap.longitude }}" target="_blank" class="text-blue-600 hover:underline block truncate">
+                        {{ scrap.address|default:"View on Map" }}
+                    </a>
+                </div>
+                {% endif %}
                 {% if scrap.offered_price %}
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-600">Offered Price:</span>

@@ -1,116 +1,136 @@
-{% extends 'admin_panel/base.html' %}
-
-{% block title %}{{ action }} Bundle{% endblock %}
-{% block page_title %}{{ action }} Bundle{% endblock %}
-
-{% block content %}
+{% extends 'admin_panel/base.html' %} {% block title %}{{ action }} Bundle{%
+endblock %} {% block page_title %}{{ action }} Bundle{% endblock %} {% block
+content %}
 <div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-xl shadow-md p-8">
-        <form method="POST" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Bundle Name *</label>
-                <input type="text" name="name" value="{{ bundle.name|default:'' }}" required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
-            </div>
+  <div class="bg-white rounded-xl shadow-md p-8">
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea name="description" rows="3"
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">{{ bundle.description|default:'' }}</textarea>
-            </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Bundle Name *</label
+        >
+        <input
+          type="text"
+          name="name"
+          value="{{ bundle.name|default:'' }}"
+          required
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+        />
+      </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Bundle Images (Multiple) *</label>
-                {% if bundle.images.all %}
-                    <div class="flex flex-wrap gap-2 mb-2">
-                        {% for img in bundle.images.all %}
-                            <img src="{{ img.image.url }}" class="w-24 h-24 object-cover rounded">
-                        {% endfor %}
-                    </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Description</label
+        >
+        <textarea
+          name="description"
+          rows="3"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+        >
+{{ bundle.description|default:'' }}</textarea
+        >
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Bundle Images (Multiple) *</label
+        >
+        {% if bundle.images.all %}
+        <div class="flex flex-wrap gap-2 mb-2">
+          {% for img in bundle.images.all %}
+          <img
+            src="{{ img.image.url }}"
+            class="w-24 h-24 object-cover rounded"
+          />
+          {% endfor %}
+        </div>
+        {% endif %}
+        <input
+          type="file"
+          name="images"
+          accept="image/*"
+          multiple
+          {%
+          if
+          action=""
+          ="Create"
+          %}required{%
+          endif
+          %}
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <p class="text-sm text-gray-500 mt-1">
+          Hold Ctrl/Cmd to select multiple images
+        </p>
+      </div>
+
+      <div class="border-t pt-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          Select Products for Bundle
+        </h3>
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto border rounded-lg p-4"
+        >
+          {% for product in products %}
+          <label
+            class="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+          >
+            <input
+              type="checkbox"
+              name="products"
+              value="{{ product.id }}"
+              {%
+              if
+              bundle
+              and
+              product
+              in
+              bundle.products.all
+              %}checked{%
+              endif
+              %}
+              class="mt-1 w-4 h-4 text-blue-600 rounded"
+            />
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                {% if product.image %}
+                <img
+                  src="{{ product.image.url }}"
+                  class="w-12 h-12 object-cover rounded"
+                />
                 {% endif %}
-                <input type="file" name="images" accept="image/*" multiple {% if action == 'Create' %}required{% endif %}
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                <p class="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple images</p>
+                <div>
+                  <p class="font-medium text-gray-900">{{ product.name }}</p>
+                  <p class="text-sm text-gray-600">NPR {{ product.price }}</p>
+                </div>
+              </div>
             </div>
+          </label>
+          {% empty %}
+          <p class="text-gray-500 col-span-2">
+            No products available. Please create products first.
+          </p>
+          {% endfor %}
+        </div>
+      </div>
 
-            <div class="border-t pt-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Bundle Items</h3>
-                    <button type="button" onclick="addItem()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                        + Add Item
-                    </button>
-                </div>
-                
-                <div id="items-container" class="space-y-4">
-                    {% if bundle.items.all %}
-                        {% for item in bundle.items.all %}
-                        <div class="item-row border rounded-lg p-4 bg-gray-50">
-                            <div class="flex justify-between mb-2">
-                                <span class="font-medium">Item {{ forloop.counter }}</span>
-                                <button type="button" onclick="removeItem(this)" class="text-red-500 hover:text-red-700">Remove</button>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <input type="text" name="item_name_{{ forloop.counter0 }}" value="{{ item.name }}" placeholder="Item Name *" required
-                                       class="px-4 py-2 border rounded-lg">
-                                <input type="number" name="item_price_{{ forloop.counter0 }}" value="{{ item.price }}" step="0.01" placeholder="Price *" required
-                                       class="px-4 py-2 border rounded-lg">
-                                <textarea name="item_desc_{{ forloop.counter0 }}" placeholder="Description" rows="1"
-                                          class="px-4 py-2 border rounded-lg">{{ item.description }}</textarea>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-                <input type="hidden" name="item_count" id="item_count" value="{{ bundle.items.count|default:0 }}">
-            </div>
-            
-            <div class="flex space-x-4 pt-6 border-t">
-                <button type="submit" class="flex-1 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-opacity-90">
-                    {{ action }} Bundle
-                </button>
-                <a href="{% url 'admin_panel:categories' %}" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-center">
-                    Cancel
-                </a>
-            </div>
-        </form>
-    </div>
+      <div class="flex space-x-4 pt-6 border-t">
+        <button
+          type="submit"
+          class="flex-1 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-opacity-90"
+        >
+          {{ action }} Bundle
+        </button>
+        <a
+          href="{% url 'admin_panel:categories' %}"
+          class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-center"
+        >
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
 </div>
-
-<script>
-let itemIndex = {{ bundle.items.count|default:0 }};
-
-function addItem() {
-    const container = document.getElementById('items-container');
-    const div = document.createElement('div');
-    div.className = 'item-row border rounded-lg p-4 bg-gray-50';
-    div.innerHTML = `
-        <div class="flex justify-between mb-2">
-            <span class="font-medium">Item ${itemIndex + 1}</span>
-            <button type="button" onclick="removeItem(this)" class="text-red-500 hover:text-red-700">Remove</button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input type="text" name="item_name_${itemIndex}" placeholder="Item Name *" required
-                   class="px-4 py-2 border rounded-lg">
-            <input type="number" name="item_price_${itemIndex}" step="0.01" placeholder="Price *" required
-                   class="px-4 py-2 border rounded-lg">
-            <textarea name="item_desc_${itemIndex}" placeholder="Description" rows="1"
-                      class="px-4 py-2 border rounded-lg"></textarea>
-        </div>
-    `;
-    container.appendChild(div);
-    itemIndex++;
-    updateItemCount();
-}
-
-function removeItem(btn) {
-    btn.closest('.item-row').remove();
-    updateItemCount();
-}
-
-function updateItemCount() {
-    document.getElementById('item_count').value = document.querySelectorAll('.item-row').length;
-}
-</script>
 {% endblock %}

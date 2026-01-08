@@ -1,6 +1,7 @@
 {% extends 'admin_panel/base.html' %}
 
 {% block title %}Review Scrap Submission{% endblock %}
+
 {% block page_title %}Review Scrap Submission{% endblock %}
 
 {% block content %}
@@ -30,12 +31,27 @@
                         <p class="text-sm text-gray-600">Submitted At</p>
                         <p class="font-semibold">{{ scrap.submitted_at|date:"M d, Y H:i" }}</p>
                     </div>
+                    {% if scrap.latitude and scrap.longitude %}
+                    <div>
+                        <p class="text-sm text-gray-600">Pickup Location</p>
+                        <p class="font-semibold mb-2">{{ scrap.address }}</p>
+                        <a href="https://www.google.com/maps?q={{ scrap.latitude }},{{ scrap.longitude }}" target="_blank" 
+                           class="inline-block px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                            📍 Open in Google Maps
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             
             <div>
                 <h3 class="text-lg font-semibold mb-4">Item Image</h3>
-                <img src="{{ scrap.image.url }}" alt="{{ scrap.item_name }}" class="w-full rounded-lg">
+                <img src="{{ scrap.image.url }}" alt="{{ scrap.item_name }}" class="w-full rounded-lg mb-4">
+                
+                {% if scrap.latitude and scrap.longitude %}
+                <h3 class="text-lg font-semibold mb-4">Location Map</h3>
+                <div id="map" class="w-full h-64 rounded-lg border"></div>
+                {% endif %}
             </div>
         </div>
 
@@ -74,4 +90,23 @@
         </form>
     </div>
 </div>
+
+{% if scrap.latitude and scrap.longitude %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"></script>
+<script>
+function initMap() {
+    const location = { lat: {{ scrap.latitude }}, lng: {{ scrap.longitude }} };
+    const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 15,
+        center: location,
+    });
+    new google.maps.Marker({
+        position: location,
+        map: map,
+        title: "Pickup Location"
+    });
+}
+window.onload = initMap;
+</script>
+{% endif %}
 {% endblock %}
