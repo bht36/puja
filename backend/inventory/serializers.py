@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ProductGrid, Category, Product, Bundle, BundleItem, BundleImage, ScrapSubmission, Order, OrderItem
+from .models import ProductGrid, Category, Product, Bundle, BundleImage, ScrapSubmission, Order, OrderItem
 
 class ProductGridSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,8 +20,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class BundleItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BundleItem
-        fields = ['id', 'name', 'description', 'price', 'order']
+        model = Product
+        fields = ['id', 'name', 'description', 'price', 'image']
 
 class BundleImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,9 +29,10 @@ class BundleImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'order']
 
 class BundleSerializer(serializers.ModelSerializer):
-    items = BundleItemSerializer(many=True, read_only=True)
+    items = BundleItemSerializer(source='products', many=True, read_only=True)
     images = BundleImageSerializer(many=True, read_only=True)
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     
     class Meta:
         model = Bundle
-        fields = ['id', 'name', 'description', 'items', 'images', 'is_active']
+        fields = ['id', 'name', 'description', 'items', 'images', 'total_price', 'is_active']

@@ -213,3 +213,6 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 # Custom User Model
 AUTH_USER_MODEL = 'authentication.User'
 
+
+# Login URL for staff_member_required decorator
+LOGIN_URL = '/login/'

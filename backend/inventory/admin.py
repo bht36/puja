@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ProductGrid, Category, Product, Bundle, BundleItem, BundleImage, ScrapSubmission, Order, OrderItem
+from .models import ProductGrid, Category, Product, Bundle, BundleImage, ScrapSubmission, Order, OrderItem
 
 @admin.register(ProductGrid)
 class ProductGridAdmin(admin.ModelAdmin):
@@ -24,12 +24,7 @@ class BundleAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active', 'created_at')
     list_filter = ('is_active', 'created_at')
     search_fields = ('name',)
-
-@admin.register(BundleItem)
-class BundleItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'bundle', 'price', 'order')
-    list_filter = ('bundle',)
-    search_fields = ('name',)
+    filter_horizontal = ('products',)
 
 @admin.register(BundleImage)
 class BundleImageAdmin(admin.ModelAdmin):

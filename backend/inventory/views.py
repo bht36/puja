@@ -9,11 +9,25 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import ProductGrid, Category, Product, Bundle, BundleItem, BundleImage, ScrapSubmission, Order, OrderItem
+from .models import ProductGrid, Category, Product, Bundle, BundleImage, ScrapSubmission, Order, OrderItem
 from authentication.models import User
 from .serializers import ProductGridSerializer, CategorySerializer, ProductSerializer, BundleSerializer
 
-@staff_member_required
+
+def handle_form_save(request, obj, fields, success_msg, redirect_url, template, context=None):
+    """Helper to reduce repetitive form handling code"""
+    if request.method == 'POST':
+        try:
+            for field, value in fields.items():
+                setattr(obj, field, value)
+            obj.save()
+            messages.success(request, success_msg)
+            return redirect(redirect_url)
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+    return render(request, template, context or {})
+
+@staff_required
 def dashboard(request):
     total_products = Product.objects.count()
     total_orders = Order.objects.count()
@@ -40,13 +54,13 @@ def dashboard(request):
         'sales_data': json.dumps(sales_data),
     })
 
-@staff_member_required
+@staff_required
 def products_list(request):
     products = Product.objects.select_related('product_grid').all()
     grids = ProductGrid.objects.all()
     return render(request, 'admin_panel/products.html', {'products': products, 'grids': grids})
 
-@staff_member_required
+@staff_required
 def grid_create(request):
     if request.method == 'POST':
         try:
@@ -60,7 +74,7 @@ def grid_create(request):
             messages.error(request, f'Error: {str(e)}')
     return render(request, 'admin_panel/grid_form.html', {'action': 'Create'})
 
-@staff_member_required
+@staff_required
 def grid_edit(request, grid_id):
     grid = get_object_or_404(ProductGrid, id=grid_id)
     if request.method == 'POST':
@@ -74,7 +88,7 @@ def grid_edit(request, grid_id):
             messages.error(request, f'Error: {str(e)}')
     return render(request, 'admin_panel/grid_form.html', {'grid': grid, 'action': 'Edit'})
 
-@staff_member_required
+@staff_required
 def grid_delete(request, grid_id):
     grid = get_object_or_404(ProductGrid, id=grid_id)
     if request.method == 'POST':
@@ -83,7 +97,7 @@ def grid_delete(request, grid_id):
         return redirect('admin_panel:products')
     return render(request, 'admin_panel/grid_confirm_delete.html', {'grid': grid})
 
-@staff_member_required
+@staff_required
 def product_create(request):
     if request.method == 'POST':
         try:
@@ -104,7 +118,7 @@ def product_create(request):
     grids = ProductGrid.objects.all()
     return render(request, 'admin_panel/product_form.html', {'action': 'Create', 'grids': grids})
 
-@staff_member_required
+@staff_required
 def product_edit(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method == 'POST':
@@ -124,7 +138,7 @@ def product_edit(request, product_id):
     grids = ProductGrid.objects.all()
     return render(request, 'admin_panel/product_form.html', {'product': product, 'action': 'Edit', 'grids': grids})
 
-@staff_member_required
+@staff_required
 def product_delete(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method == 'POST':
@@ -133,18 +147,18 @@ def product_delete(request, product_id):
         return redirect('admin_panel:products')
     return render(request, 'admin_panel/product_confirm_delete.html', {'product': product})
 
-@staff_member_required
+@staff_required
 def categories_list(request):
     categories = Category.objects.all()
     bundles = Bundle.objects.all()
     return render(request, 'admin_panel/categories.html', {'categories': categories, 'bundles': bundles})
 
-@staff_member_required
+@staff_required
 def scrap_review(request):
     scraps = ScrapSubmission.objects.select_related('user').order_by('-submitted_at')
     return render(request, 'admin_panel/scrap.html', {'scraps': scraps})
 
-@staff_member_required
+@staff_required
 def scrap_update(request, scrap_id):
     scrap = get_object_or_404(ScrapSubmission, id=scrap_id)
     if request.method == 'POST':
@@ -161,12 +175,12 @@ def scrap_update(request, scrap_id):
             messages.error(request, f'Error: {str(e)}')
     return render(request, 'admin_panel/scrap_review_form.html', {'scrap': scrap})
 
-@staff_member_required
+@staff_required
 def users_list(request):
     users = User.objects.all().order_by('-date_joined')
     return render(request, 'admin_panel/users.html', {'users': users})
 
-@staff_member_required
+@staff_required
 def user_create(request):
     if request.method == 'POST':
         try:
@@ -187,7 +201,7 @@ def user_create(request):
             messages.error(request, f'Error: {str(e)}')
     return render(request, 'admin_panel/user_form.html', {'action': 'Create'})
 
-@staff_member_required
+@staff_required
 def user_edit(request, user_id):
     user = get_object_or_404(User, id=user_id)
     if request.method == 'POST':
@@ -209,7 +223,7 @@ def user_edit(request, user_id):
             messages.error(request, f'Error: {str(e)}')
     return render(request, 'admin_panel/user_form.html', {'user': user, 'action': 'Edit'})
 
-@staff_member_required
+@staff_required
 def user_delete(request, user_id):
     user = get_object_or_404(User, id=user_id)
     if request.method == 'POST':
@@ -218,12 +232,12 @@ def user_delete(request, user_id):
         return redirect('admin_panel:users')
     return render(request, 'admin_panel/user_confirm_delete.html', {'user': user})
 
-@staff_member_required
+@staff_required
 def user_view(request, user_id):
     user = get_object_or_404(User, id=user_id)
     return render(request, 'admin_panel/user_detail.html', {'user': user})
 
-@staff_member_required
+@staff_required
 def category_create(request):
     if request.method == 'POST':
         try:
@@ -242,7 +256,7 @@ def category_create(request):
             messages.error(request, f'Error: {str(e)}')
     return render(request, 'admin_panel/category_form.html', {'action': 'Create'})
 
-@staff_member_required
+@staff_required
 def category_edit(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     if request.method == 'POST':
@@ -260,7 +274,7 @@ def category_edit(request, category_id):
             messages.error(request, f'Error: {str(e)}')
     return render(request, 'admin_panel/category_form.html', {'category': category, 'action': 'Edit'})
 
-@staff_member_required
+@staff_required
 def category_delete(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     if request.method == 'POST':
@@ -269,7 +283,7 @@ def category_delete(request, category_id):
         return redirect('admin_panel:categories')
     return render(request, 'admin_panel/category_confirm_delete.html', {'category': category})
 
-@staff_member_required
+@staff_required
 def bundle_create(request):
     if request.method == 'POST':
         try:
@@ -281,21 +295,18 @@ def bundle_create(request):
             for idx, img in enumerate(images):
                 BundleImage.objects.create(bundle=bundle, image=img, order=idx)
             
-            item_count = int(request.POST.get('item_count', 0))
-            for i in range(item_count):
-                name = request.POST.get(f'item_name_{i}')
-                desc = request.POST.get(f'item_desc_{i}', '')
-                price = request.POST.get(f'item_price_{i}')
-                if name and price:
-                    BundleItem.objects.create(bundle=bundle, name=name, description=desc, price=price, order=i)
+            product_ids = request.POST.getlist('products')
+            if product_ids:
+                bundle.products.set(product_ids)
             
             messages.success(request, 'Bundle created successfully!')
             return redirect('admin_panel:categories')
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
-    return render(request, 'admin_panel/bundle_form.html', {'action': 'Create'})
+    products = Product.objects.filter(is_active=True)
+    return render(request, 'admin_panel/bundle_form.html', {'action': 'Create', 'products': products})
 
-@staff_member_required
+@staff_required
 def bundle_edit(request, bundle_id):
     bundle = get_object_or_404(Bundle, id=bundle_id)
     if request.method == 'POST':
@@ -312,22 +323,17 @@ def bundle_edit(request, bundle_id):
                 for idx, img in enumerate(images):
                     BundleImage.objects.create(bundle=bundle, image=img, order=idx)
             
-            bundle.items.all().delete()
-            item_count = int(request.POST.get('item_count', 0))
-            for i in range(item_count):
-                name = request.POST.get(f'item_name_{i}')
-                desc = request.POST.get(f'item_desc_{i}', '')
-                price = request.POST.get(f'item_price_{i}')
-                if name and price:
-                    BundleItem.objects.create(bundle=bundle, name=name, description=desc, price=price, order=i)
+            product_ids = request.POST.getlist('products')
+            bundle.products.set(product_ids)
             
             messages.success(request, 'Bundle updated successfully!')
             return redirect('admin_panel:categories')
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
-    return render(request, 'admin_panel/bundle_form.html', {'bundle': bundle, 'action': 'Edit'})
+    products = Product.objects.filter(is_active=True)
+    return render(request, 'admin_panel/bundle_form.html', {'bundle': bundle, 'action': 'Edit', 'products': products})
 
-@staff_member_required
+@staff_required
 def bundle_delete(request, bundle_id):
     bundle = get_object_or_404(Bundle, id=bundle_id)
     if request.method == 'POST':
@@ -384,6 +390,9 @@ def api_scrap_submit(request):
             description=request.data.get('description'),
             weight=request.data.get('weight'),
             image=request.FILES.get('image'),
+            latitude=request.data.get('latitude'),
+            longitude=request.data.get('longitude'),
+            address=request.data.get('address', ''),
         )
         return Response({'message': 'Scrap submitted successfully', 'id': scrap.id}, status=status.HTTP_201_CREATED)
     except Exception as e:

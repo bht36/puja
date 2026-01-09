@@ -4,7 +4,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', include('inventory.urls')),
+    path('django-admin/', admin.site.urls),  # Django's built-in admin
+    path('admin/', include('inventory.urls')),  # Your custom admin panel
     path('api/auth/', include('authentication.urls')),
 ]
 
