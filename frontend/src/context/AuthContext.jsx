@@ -63,8 +63,6 @@ export const AuthProvider = ({ children }) => {
       if (refreshToken) {
         await authAPI.logout(refreshToken);
       }
-    } catch (err) {
-      console.error("Logout error:", err);
     } finally {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { Button } from "../common/Button";
 import { useParams, useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft, Share2, Shield, Truck, RotateCcw } from "lucide-react";
 import { Header } from "../homepage";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -16,7 +17,7 @@ export default function ProductDetail() {
     id: 1,
     title: "धूप बत्ती सेट",
     description: "Traditional sandalwood incense sticks for daily prayers. Made from pure sandalwood and natural ingredients, these incense sticks create a divine atmosphere perfect for meditation and spiritual practices.",
-    price: "NPR 220",
+    price: 220,
     rating: 4.5,
     reviews: 128,
     inStock: true,
@@ -38,6 +39,18 @@ export default function ProductDetail() {
       "Burn Time": "45 minutes per stick",
       "Fragrance": "Sandalwood"
     }
+  };
+
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      type: 'product',
+      name: product.title,
+      price: product.price,
+      quantity: quantity,
+      image: product.images[0]
+    });
+    navigate('/cart');
   };
 
   return (
@@ -104,7 +117,7 @@ export default function ProductDetail() {
 
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6">
               <div className="flex items-baseline gap-3 mb-4">
-                <span className="text-5xl font-bold text-purple-600">{product.price}</span>
+                <span className="text-5xl font-bold text-purple-600">NPR {product.price}</span>
                 <span className="text-gray-500 line-through text-xl">NPR 300</span>
                 <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">27% OFF</span>
               </div>
@@ -124,11 +137,14 @@ export default function ProductDetail() {
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
-              <button className="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2">
+              <button 
+                onClick={handleAddToCart}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2"
+              >
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
               </button>
-              <Button>Buy Now</Button>
+              <button className="px-6 py-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold transition-all">Buy Now</button>
             </div>
 
             <div className="grid grid-cols-3 gap-4">

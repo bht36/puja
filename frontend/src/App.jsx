@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
 import Home from "./Home";
 import { 
   Login, 
@@ -20,7 +21,8 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
+        <CartProvider>
+          <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -95,6 +97,7 @@ function App() {
             }
           />
         </Routes>
+        </CartProvider>
       </AuthProvider>
     </Router>
   );

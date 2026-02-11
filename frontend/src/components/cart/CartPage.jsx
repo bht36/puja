@@ -1,52 +1,14 @@
-import React, { useState } from "react";
-import { Button } from "../common/Button";
+import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 import { Header, Footer } from "../homepage";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Brass Diya Set",
-      price: 850,
-      quantity: 2,
-      image: "https://images.unsplash.com/photo-1549388604-817d15aa0110?w=150&h=150&fit=crop"
-    },
-    {
-      id: 2,
-      name: "Copper Kalash",
-      price: 1200,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=150&h=150&fit=crop"
-    },
-    {
-      id: 3,
-      name: "Sandalwood Incense",
-      price: 250,
-      quantity: 3,
-      image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=150&h=150&fit=crop"
-    }
-  ]);
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartCount } = useCart();
 
-  const updateQuantity = (id, change) => {
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      )
-    );
-  };
-
-  const removeItem = (id) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-  };
-
-  const getSubtotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  };
+  const getSubtotal = () => getCartTotal();
 
   const getTotal = () => {
     const subtotal = getSubtotal();
@@ -59,7 +21,7 @@ export default function CartPage() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-[#1E1C25] mb-8">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold text-[#1E1C25] mb-8">Shopping Cart ({getCartCount()} items)</h1>
 
         {cartItems.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center shadow">
@@ -78,7 +40,7 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {cartItems.map(item => (
-                <div key={item.id} className="bg-white rounded-2xl p-4 shadow flex items-center gap-4">
+                <div key={`${item.type}-${item.id}`} className="bg-white rounded-2xl p-4 shadow flex items-center gap-4">
                   <img
                     src={item.image}
                     alt={item.name}
@@ -87,19 +49,20 @@ export default function CartPage() {
                   
                   <div className="flex-1">
                     <h3 className="font-bold text-gray-900 mb-1">{item.name}</h3>
+                    <p className="text-sm text-gray-500 mb-1">{item.type === 'bundle' ? 'Bundle' : 'Product'}</p>
                     <p className="text-lg font-bold text-purple-600">NPR {item.price}</p>
                   </div>
 
                   <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
                     <button
-                      onClick={() => updateQuantity(item.id, -1)}
+                      onClick={() => updateQuantity(item.id, item.type, item.quantity - 1)}
                       className="w-8 h-8 rounded bg-white hover:bg-gray-100 flex items-center justify-center"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
                     <span className="w-10 text-center font-bold">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, 1)}
+                      onClick={() => updateQuantity(item.id, item.type, item.quantity + 1)}
                       className="w-8 h-8 rounded bg-red-500 hover:bg-red-600 text-white flex items-center justify-center"
                     >
                       <Plus className="w-4 h-4" />
@@ -107,7 +70,7 @@ export default function CartPage() {
                   </div>
 
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeFromCart(item.id, item.type)}
                     className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />

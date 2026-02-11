@@ -1,43 +1,34 @@
 import { useState } from "react";
-import { Button } from "../common/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { Button, Input, Alert, Card } from "../common";
 
 export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
-    password: "",
-    password_confirm: "",
+    username: "",
     first_name: "",
     last_name: "",
+    password: "",
+    password_confirm: ""
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (formData.password !== formData.password_confirm) {
-      setError("Passwords do not match");
-      return;
-    }
-
     setLoading(true);
-    const result = await register(formData);
 
+    const result = await register(formData);
     if (result.success) {
-      navigate("/verify-otp", { state: { email: formData.email } });
+      navigate("/verify-otp", { state: { email: result.email } });
     } else {
       setError(result.error);
     }
@@ -45,132 +36,85 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <Link
-              to="/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              sign in to existing account
-            </Link>
+    <div className="min-h-screen flex items-center justify-center bg-[#F0EDE5] py-12 px-4">
+      <Card className="max-w-md w-full space-y-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Already have an account? <Link to="/login" className="font-medium text-red-500 hover:text-red-600">Sign in</Link>
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <Alert type="error" message={error} onClose={() => setError("")} />}
 
-          <div className="rounded-md shadow-sm space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="first_name" className="sr-only">
-                  First Name
-                </label>
-                <input
-                  id="first_name"
-                  name="first_name"
-                  type="text"
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="First Name"
-                  value={formData.first_name}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label htmlFor="last_name" className="sr-only">
-                  Last Name
-                </label>
-                <input
-                  id="last_name"
-                  name="last_name"
-                  type="text"
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Last Name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter your email"
+            required
+          />
 
-            <div>
-              <label htmlFor="username" className="sr-only">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleChange}
-              />
-            </div>
+          <Input
+            label="Username"
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            placeholder="Choose a username"
+            required
+          />
 
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Email address"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="First Name"
+              type="text"
+              name="first_name"
+              value={formData.first_name}
+              onChange={handleChange}
+              placeholder="First name"
+              required
+            />
 
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password_confirm" className="sr-only">
-                Confirm Password
-              </label>
-              <input
-                id="password_confirm"
-                name="password_confirm"
-                type="password"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Confirm Password"
-                value={formData.password_confirm}
-                onChange={handleChange}
-              />
-            </div>
+            <Input
+              label="Last Name"
+              type="text"
+              name="last_name"
+              value={formData.last_name}
+              onChange={handleChange}
+              placeholder="Last name"
+              required
+            />
           </div>
 
-          <div>
-            <Button type="submit" disabled={loading} fullWidth>{loading ? "Creating account..." : "Create account"}</Button>
-          </div>
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Create a password"
+            required
+          />
+
+          <Input
+            label="Confirm Password"
+            type="password"
+            name="password_confirm"
+            value={formData.password_confirm}
+            onChange={handleChange}
+            placeholder="Confirm your password"
+            required
+          />
+
+          <Button type="submit" disabled={loading} fullWidth>
+            {loading ? "Creating account..." : "Create account"}
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

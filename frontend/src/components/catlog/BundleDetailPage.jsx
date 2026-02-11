@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../common/Button";
 import { useParams, useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 import { Header, Footer } from "../homepage";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
 
 export default function BundleDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [bundle, setBundle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [itemQuantities, setItemQuantities] = useState({});
@@ -45,6 +46,23 @@ export default function BundleDetailPage() {
 
   const getSelectedCount = () => {
     return Object.values(itemQuantities).reduce((sum, qty) => sum + qty, 0);
+  };
+
+  const handleAddToCart = () => {
+    bundle.items?.forEach(item => {
+      const qty = itemQuantities[item.id] || 0;
+      if (qty > 0) {
+        addToCart({
+          id: item.id,
+          type: 'bundle-item',
+          name: `${bundle.name} - ${item.name}`,
+          price: parseFloat(item.price),
+          quantity: qty,
+          image: bundle.images?.[0]?.image ? `http://127.0.0.1:8000${bundle.images[0].image}` : ''
+        });
+      }
+    });
+    navigate('/cart');
   };
 
   if (loading) {
@@ -132,7 +150,11 @@ export default function BundleDetailPage() {
                 </div>
               </div>
               <div className="space-y-3">
-                <button className="w-full bg-red-500 hover:bg-red-600 text-white py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                <button 
+                  onClick={handleAddToCart}
+                  disabled={getSelectedCount() === 0}
+                  className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                >
                   <ShoppingCart className="w-5 h-5" />
                   Add to Cart
                 </button>

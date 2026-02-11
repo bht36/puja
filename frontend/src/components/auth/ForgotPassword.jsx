@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Button } from "../common/Button";
 import { Link, useNavigate } from "react-router-dom";
-import { authAPI } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
+import { Button, Input, Alert, Card } from "../common";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
+  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,52 +15,49 @@ export default function ForgotPassword() {
     setError("");
     setLoading(true);
 
-    try {
-      await authAPI.forgotPassword(email);
+    const result = await forgotPassword(email);
+    if (result.success) {
       navigate("/forgot-password-otp", { state: { email } });
-    } catch (err) {
-      setError(err.message || "Something went wrong");
+    } else {
+      setError(result.error);
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Forgot Password
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your registered email to receive OTP
+    <div className="min-h-screen flex items-center justify-center bg-[#F0EDE5] py-12 px-4">
+      <Card className="max-w-md w-full space-y-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900">Forgot Password</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Enter your email to receive a verification code
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          {error && (
-            <div className="text-red-500 text-center text-sm">{error}</div>
-          )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <Alert type="error" message={error} onClose={() => setError("")} />}
 
-          <div>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email address"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            required
+          />
 
-          <Button type="submit" disabled={loading} fullWidth>{loading ? "Sending..." : "Send OTP"}</Button>
+          <Button type="submit" disabled={loading} fullWidth>
+            {loading ? "Sending..." : "Send verification code"}
+          </Button>
 
           <div className="text-center">
-            <Link to="/login" className="text-blue-600 hover:text-blue-500">
-              Back to Login
+            <Link to="/login" className="text-sm font-medium text-red-500 hover:text-red-600">
+              Back to login
             </Link>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }
