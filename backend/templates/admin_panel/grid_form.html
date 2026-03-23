@@ -1,37 +1,54 @@
-{% extends 'admin_panel/base.html' %}
-
-{% block title %}{{ action }} Product Grid{% endblock %}
-{% block page_title %}{{ action }} Product Grid{% endblock %}
-
+{% extends 'admin_panel/base.html' %} {% block title %}{{ action }} Product
+Grid{% endblock %} {% block page_title %}{{ action }} Product Grid{% endblock %}
 {% block content %}
 <div class="max-w-2xl mx-auto">
-    <div class="bg-white rounded-xl shadow-md p-8">
-        <form method="POST" class="space-y-6">
-            {% csrf_token %}
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Grid Title *</label>
-                <input type="text" name="title" value="{{ grid.title|default:'' }}" required
-                       placeholder="e.g., Metal Products, Top Selling Items"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
-            </div>
+  <div class="bg-white rounded-xl shadow-md p-8">
+    <form method="POST" class="space-y-6">
+      {% csrf_token %}
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
-                <input type="number" name="order" value="{{ grid.order|default:0 }}" min="0"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
-                <p class="text-sm text-gray-500 mt-1">Lower numbers appear first</p>
-            </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Grid Title *</label
+        >
+        <input
+          type="text"
+          name="title"
+          value="{{ grid.title|default:'' }}"
+          required
+          placeholder="e.g., Metal Products, Top Selling Items"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+        />
+      </div>
 
-            <div class="flex space-x-4 pt-6 border-t">
-                <button type="submit" class="flex-1 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-opacity-90">
-                    {{ action }} Grid
-                </button>
-                <a href="{% url 'admin_panel:products' %}" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-center">
-                    Cancel
-                </a>
-            </div>
-        </form>
-    </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Display Order</label
+        >
+        <input
+          type="number"
+          name="order"
+          value="{{ grid.order|default:0 }}"
+          min="0"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+        />
+        <p class="text-sm text-gray-500 mt-1">Lower numbers appear first</p>
+      </div>
+
+      <div class="flex space-x-4 pt-6 border-t">
+        <button
+          type="submit"
+          class="flex-1 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-opacity-90"
+        >
+          {{ action }} Grid
+        </button>
+        <a
+          href="{% url 'admin_panel:products' %}"
+          class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-center"
+        >
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}

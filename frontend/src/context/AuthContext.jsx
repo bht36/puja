@@ -66,6 +66,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
+      localStorage.removeItem("cart");
       setUser(null);
     }
   };

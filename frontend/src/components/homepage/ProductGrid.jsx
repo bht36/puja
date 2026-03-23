@@ -31,31 +31,37 @@ export default function ProductGrid() {
           />
         ))}
 
-        <section>
-          <h2 className="text-3xl font-bold text-[#1E1C25] mb-8">Spiritual Insights and Guides</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-[#C28142] rounded-lg flex items-center justify-center mb-4">
-                <span className="text-white text-2xl">📖</span>
+        <section className="mt-20">
+          <div className="text-center mb-12" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1B1917] mb-4">
+              आध्यात्मिक <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D97706] to-red-600">ज्ञान र मार्गदर्शन</span>
+            </h2>
+            <p className="text-[#78716C] font-medium text-lg">Spiritual Insights and Guides</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(217,119,6,0.12)] transition-all duration-500 border border-[#F5F5F4] hover:-translate-y-2 group cursor-pointer text-center">
+              <div className="w-16 h-16 bg-orange-50 rounded-[16px] flex items-center justify-center mb-6 text-3xl mx-auto group-hover:scale-110 group-hover:bg-red-50 transition-all duration-500">
+                📖
               </div>
-              <h3 className="text-xl font-bold text-[#1E1C25] mb-2">Puja Vidhi</h3>
-              <p className="text-[#6B6560] text-sm">Step-by-step guides for traditional Hindu rituals</p>
+              <h3 className="text-xl font-bold text-[#1B1917] mb-3 font-sans group-hover:text-red-600 transition-colors" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>पूजा विधि (Puja Vidhi)</h3>
+              <p className="text-[#78716C] text-sm leading-relaxed">विभिन्न परम्परागत हिन्दू अनुष्ठान र पूजाहरूको विस्तृत चरणबद्ध मार्गदर्शन। (Step-by-step guides for traditional Hindu rituals)</p>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-[#C28142] rounded-lg flex items-center justify-center mb-4">
-                <span className="text-white text-2xl">🕉️</span>
+            <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(217,119,6,0.12)] transition-all duration-500 border border-[#F5F5F4] hover:-translate-y-2 group cursor-pointer text-center">
+              <div className="w-16 h-16 bg-orange-50 rounded-[16px] flex items-center justify-center mb-6 text-3xl mx-auto group-hover:scale-110 group-hover:bg-red-50 transition-all duration-500">
+                🕉️
               </div>
-              <h3 className="text-xl font-bold text-[#1E1C25] mb-2">Mantras</h3>
-              <p className="text-[#6B6560] text-sm">Sacred chants and their meanings</p>
+              <h3 className="text-xl font-bold text-[#1B1917] mb-3 group-hover:text-red-600 transition-colors" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>मन्त्र तथा श्लोक (Mantras)</h3>
+              <p className="text-[#78716C] text-sm leading-relaxed">पवित्र मन्त्रहरू, तिनको अर्थ र दैनिक जीवनमा उच्चारणको महत्त्व। (Sacred chants and their meanings)</p>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-12 h-12 bg-[#C28142] rounded-lg flex items-center justify-center mb-4">
-                <span className="text-white text-2xl">📅</span>
+            <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(217,119,6,0.12)] transition-all duration-500 border border-[#F5F5F4] hover:-translate-y-2 group cursor-pointer text-center">
+              <div className="w-16 h-16 bg-orange-50 rounded-[16px] flex items-center justify-center mb-6 text-3xl mx-auto group-hover:scale-110 group-hover:bg-red-50 transition-all duration-500">
+                📅
               </div>
-              <h3 className="text-xl font-bold text-[#1E1C25] mb-2">Festival Calendar</h3>
-              <p className="text-[#6B6560] text-sm">Important dates and celebrations</p>
+              <h3 className="text-xl font-bold text-[#1B1917] mb-3 group-hover:text-red-600 transition-colors" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>चाडपर्व क्यालेन्डर (Calendar)</h3>
+              <p className="text-[#78716C] text-sm leading-relaxed">वर्षभरिका महत्त्वपूर्ण चाडबाड, तिथि र उत्सवहरूको जानकारी। (Important dates and celebrations)</p>
             </div>
           </div>
         </section>
@@ -82,9 +88,10 @@ function ProductSection({ title, products, sectionId }) {
   return (
     <section className="mb-16">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-[#1E1C25]">{title}</h2>
-        <button className="text-[#C28142] hover:text-[#94331F] font-medium transition-colors">
-          View More →
+        <h2 className="text-3xl font-extrabold text-[#1B1917] tracking-tight" style={{ fontFamily: 'Noto Sans Devanagari, sans-serif' }}>{title}</h2>
+        <button className="text-[#D97706] hover:text-red-600 font-bold text-sm transition-colors flex items-center gap-1">
+          View More
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
       
@@ -92,7 +99,7 @@ function ProductSection({ title, products, sectionId }) {
         <div className="flex items-center gap-6">
           {totalPages > 1 && (
             <button onClick={prevSlide} className="p-3 rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow z-10 flex-shrink-0">
-              <svg className="w-6 h-6 text-[#C28142]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-[#D97706]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -116,7 +123,7 @@ function ProductSection({ title, products, sectionId }) {
 
           {totalPages > 1 && (
             <button onClick={nextSlide} className="p-3 rounded-full bg-white shadow-lg hover:shadow-xl transition-shadow z-10 flex-shrink-0">
-              <svg className="w-6 h-6 text-[#C28142]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-[#D97706]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -130,7 +137,7 @@ function ProductSection({ title, products, sectionId }) {
                 key={index}
                 onClick={() => setCurrentIndex(index)}
                 className={`w-3 h-3 rounded-full transition-colors ${
-                  index === currentIndex ? 'bg-[#C28142]' : 'bg-[#C0B8AF]'
+                  index === currentIndex ? 'bg-[#D97706]' : 'bg-[#C0B8AF]'
                 }`}
               />
             ))}

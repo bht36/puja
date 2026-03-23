@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ProductGrid, Category, Product, Bundle, BundleImage, ScrapSubmission, Order, OrderItem
+from .models import ProductGrid, Category, Product, Bundle, ScrapSubmission, Order, OrderItem
 
 @admin.register(ProductGrid)
 class ProductGridAdmin(admin.ModelAdmin):
@@ -26,10 +26,7 @@ class BundleAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     filter_horizontal = ('products',)
 
-@admin.register(BundleImage)
-class BundleImageAdmin(admin.ModelAdmin):
-    list_display = ('bundle', 'order')
-    list_filter = ('bundle',)
+
 
 @admin.register(ScrapSubmission)
 class ScrapSubmissionAdmin(admin.ModelAdmin):

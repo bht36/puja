@@ -9,13 +9,11 @@ export default function EditProfile() {
   const [profileData, setProfileData] = useState({
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
-    username: user?.username || '',
     email: user?.email || '',
     phone: user?.phone || '',
     address: user?.address || '',
     city: user?.city || '',
     postal_code: user?.postal_code || '',
-    date_of_birth: user?.date_of_birth || '',
     gender: user?.gender || ''
   });
   const [profileImage, setProfileImage] = useState(null);
@@ -189,17 +187,6 @@ export default function EditProfile() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input
-                  type="text"
-                  name="username"
-                  value={profileData.username}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C28142] focus:border-transparent"
-                />
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email {emailChanged && <span className="text-red-500">(Verification required)</span>}
                 </label>
@@ -218,17 +205,6 @@ export default function EditProfile() {
                   type="tel"
                   name="phone"
                   value={profileData.phone}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C28142] focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                <input
-                  type="date"
-                  name="date_of_birth"
-                  value={profileData.date_of_birth}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C28142] focus:border-transparent"
                 />

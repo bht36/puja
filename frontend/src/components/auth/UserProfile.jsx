@@ -81,10 +81,6 @@ export default function UserProfile() {
             
             <div className="space-y-2 text-sm">
               <div>
-                <span className="text-gray-600">Username:</span>
-                <span className="ml-2 text-[#1E1C25]">{user.username}</span>
-              </div>
-              <div>
                 <span className="text-gray-600">Member since:</span>
                 <span className="ml-2 text-[#1E1C25]">
                   {new Date(user.created_at).toLocaleDateString()}
@@ -104,6 +100,12 @@ export default function UserProfile() {
                 className="w-full text-left px-3 py-2 text-sm text-[#C28142] hover:bg-[#C28142] hover:text-white rounded transition-colors"
               >
                 Edit Profile
+              </button>
+              <button
+                onClick={() => { setIsOpen(false); navigate('/review'); }}
+                className="w-full text-left px-3 py-2 text-sm text-[#C28142] hover:bg-[#C28142] hover:text-white rounded transition-colors"
+              >
+                Write a Review ⭐
               </button>
               <button
                 onClick={logout}

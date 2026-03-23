@@ -26,4 +26,8 @@ urlpatterns = [
     path('users/<int:user_id>/edit/', views.user_edit, name='user_edit'),
     path('users/<int:user_id>/delete/', views.user_delete, name='user_delete'),
     path('users/<int:user_id>/', views.user_view, name='user_view'),
+    path('orders/', views.orders_list, name='orders'),
+    path('orders/<int:order_id>/status/', views.order_update_status, name='order_status'),
+    path('reviews/', views.reviews_list, name='reviews'),
+    path('reviews/<int:review_id>/approve/', views.review_approve, name='review_approve'),
 ]

@@ -216,3 +216,9 @@ AUTH_USER_MODEL = 'authentication.User'
 
 # Login URL for staff_member_required decorator
 LOGIN_URL = '/login/'
+
+# Payment Gateway Settings
+ESEWA_PRODUCT_CODE = os.environ.get('ESEWA_PRODUCT_CODE', 'EPAYTEST')
+ESEWA_SECRET_KEY   = os.environ.get('ESEWA_SECRET_KEY', '8gBm/:&EnhH.1/q')
+ESEWA_SUCCESS_URL  = os.environ.get('ESEWA_SUCCESS_URL', 'http://localhost:5173/payment/esewa/success')
+ESEWA_FAILURE_URL  = os.environ.get('ESEWA_FAILURE_URL', 'http://localhost:5173/payment/esewa/failure')

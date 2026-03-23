@@ -47,10 +47,10 @@ class Bundle(models.Model):
     products = models.ManyToManyField(Product, related_name='bundles', blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return self.name
-    
+
     def total_price(self):
         return sum(p.price for p in self.products.all())
 
@@ -58,7 +58,15 @@ class BundleImage(models.Model):
     bundle = models.ForeignKey(Bundle, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='bundles/')
     order = models.IntegerField(default=0)
-    
+
+    class Meta:
+        ordering = ['order']
+
+class BundleImage(models.Model):
+    bundle = models.ForeignKey(Bundle, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='bundles/')
+    order = models.IntegerField(default=0)
+
     class Meta:
         ordering = ['order']
 
@@ -94,10 +102,21 @@ class Order(models.Model):
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
+    PAYMENT_CHOICES = [
+        ('cod', 'Cash on Delivery'),
+        ('esewa', 'eSewa'),
+        ('bank', 'Bank Transfer'),
+    ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    delivery_address = models.TextField(blank=True)
+    delivery_city = models.CharField(max_length=100, blank=True)
+    delivery_phone = models.CharField(max_length=20, blank=True)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cod')
+    payment_status = models.CharField(max_length=20, default='unpaid')
+    payment_ref = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -114,3 +133,17 @@ class OrderItem(models.Model):
     def __str__(self):
         item = self.product or self.bundle
         return f"{item.name} x {self.quantity}"
+
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'order')
+
+    def __str__(self):
+        return f"{self.user.email} - {self.rating}★"

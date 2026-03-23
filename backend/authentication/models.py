@@ -13,21 +13,19 @@ class User(AbstractUser):
     address = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
     postal_code = models.CharField(max_length=10, blank=True, null=True)
-    date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=10, choices=[
         ('male', 'Male'),
         ('female', 'Female'),
         ('other', 'Other')
     ], blank=True, null=True)
     profile_image = models.ImageField(upload_to=user_profile_image_path, blank=True, null=True)
-    temp_email = models.EmailField(blank=True, null=True)  # For email change verification
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-    
+    REQUIRED_FIELDS = ['first_name', 'last_name']
+
     def __str__(self):
         return self.email
 
