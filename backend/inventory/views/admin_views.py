@@ -4,8 +4,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Sum, Q
 from django.utils import timezone
-from ..models import Product, ProductGrid, Category, Bundle, ScrapSubmission, Order, Review
+from django.core.mail import send_mail
+from django.conf import settings
 from authentication.models import User
+from ..models import Product, ProductGrid, Category, Bundle, BundleImage, ScrapSubmission, Order, Review
 from .decorators import staff_required
 
 
@@ -111,9 +113,7 @@ def product_edit(request, product_id):
             return redirect('admin_panel:products')
         except Exception as e:
             messages.error(request, f'Error: {e}')
-    return render(request, 'admin_panel/product_form.html', {
-        'product': product, 'action': 'Edit', 'grids': ProductGrid.objects.all()
-    })
+    return render(request, 'admin_panel/product_form.html', {'product': product, 'action': 'Edit', 'grids': ProductGrid.objects.all()})
 
 
 @staff_required
@@ -185,7 +185,6 @@ def category_delete(request, category_id):
 
 @staff_required
 def bundle_create(request):
-    from ..models import BundleImage
     if request.method == 'POST':
         try:
             bundle = Bundle.objects.create(
@@ -199,14 +198,11 @@ def bundle_create(request):
             return redirect('admin_panel:categories')
         except Exception as e:
             messages.error(request, f'Error: {e}')
-    return render(request, 'admin_panel/bundle_form.html', {
-        'action': 'Create', 'products': Product.objects.filter(is_active=True)
-    })
+    return render(request, 'admin_panel/bundle_form.html', {'action': 'Create', 'products': Product.objects.filter(is_active=True)})
 
 
 @staff_required
 def bundle_edit(request, bundle_id):
-    from ..models import BundleImage
     bundle = get_object_or_404(Bundle, id=bundle_id)
     if request.method == 'POST':
         try:
@@ -223,9 +219,7 @@ def bundle_edit(request, bundle_id):
             return redirect('admin_panel:categories')
         except Exception as e:
             messages.error(request, f'Error: {e}')
-    return render(request, 'admin_panel/bundle_form.html', {
-        'bundle': bundle, 'action': 'Edit', 'products': Product.objects.filter(is_active=True)
-    })
+    return render(request, 'admin_panel/bundle_form.html', {'bundle': bundle, 'action': 'Edit', 'products': Product.objects.filter(is_active=True)})
 
 
 @staff_required
@@ -256,6 +250,24 @@ def scrap_update(request, scrap_id):
             if scrap.status in ['approved', 'rejected']:
                 scrap.reviewed_at = timezone.now()
             scrap.save()
+
+            if scrap.status == 'approved':
+                send_mail(
+                    'Your Scrap Submission Has Been Approved – Puja Pasal',
+                    f"Dear {scrap.user.first_name},\n\nYour scrap submission \"{scrap.item_name}\" has been approved.\n\nOffered Price: Rs. {scrap.offered_price}\n"
+                    + (f"Admin Notes: {scrap.admin_notes}\n" if scrap.admin_notes else "")
+                    + "\nOur team will contact you shortly.\n\nThank you,\nPuja Pasal Team",
+                    settings.DEFAULT_FROM_EMAIL, [scrap.user.email], fail_silently=True,
+                )
+            elif scrap.status == 'rejected':
+                send_mail(
+                    'Update on Your Scrap Submission – Puja Pasal',
+                    f"Dear {scrap.user.first_name},\n\nYour scrap submission \"{scrap.item_name}\" could not be accepted.\n"
+                    + (f"Reason: {scrap.admin_notes}\n" if scrap.admin_notes else "")
+                    + "\nFeel free to submit again.\n\nThank you,\nPuja Pasal Team",
+                    settings.DEFAULT_FROM_EMAIL, [scrap.user.email], fail_silently=True,
+                )
+
             messages.success(request, f'Scrap submission {scrap.status}!')
             return redirect('admin_panel:scrap')
         except Exception as e:
@@ -341,8 +353,7 @@ def order_update_status(request, order_id):
         order.status = request.POST['status']
         order.save(update_fields=['status'])
         messages.success(request, f'Order #{order.id} status updated.')
-        return redirect('admin_panel:orders')
-    return render(request, 'admin_panel/order_status_form.html', {'order': order})
+    return redirect('admin_panel:orders')
 
 
 @staff_required
@@ -353,7 +364,9 @@ def reviews_list(request):
 
 
 @staff_required
-def review_approve(request, review_id):
-    get_object_or_404(Review, id=review_id)
-    messages.success(request, 'Review updated.')
+def review_delete(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.method == 'POST':
+        review.delete()
+        messages.success(request, 'Review deleted.')
     return redirect('admin_panel:reviews')

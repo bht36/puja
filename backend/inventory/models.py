@@ -1,31 +1,34 @@
 from django.db import models
 from authentication.models import User
 
+
 class ProductGrid(models.Model):
     title = models.CharField(max_length=200)
     order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         ordering = ['order']
-    
+
     def __str__(self):
         return self.title
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    icon = models.CharField(max_length=10, default='🙏', help_text='Emoji icon')
-    color = models.CharField(max_length=50, default='from-blue-400 to-purple-500', help_text='Tailwind gradient classes')
+    icon = models.CharField(max_length=10, default='🙏')
+    color = models.CharField(max_length=50, default='from-blue-400 to-purple-500')
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         verbose_name_plural = 'Categories'
-    
+
     def __str__(self):
         return self.name
+
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
@@ -37,9 +40,10 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return self.name
+
 
 class Bundle(models.Model):
     name = models.CharField(max_length=200)
@@ -54,13 +58,6 @@ class Bundle(models.Model):
     def total_price(self):
         return sum(p.price for p in self.products.all())
 
-class BundleImage(models.Model):
-    bundle = models.ForeignKey(Bundle, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='bundles/')
-    order = models.IntegerField(default=0)
-
-    class Meta:
-        ordering = ['order']
 
 class BundleImage(models.Model):
     bundle = models.ForeignKey(Bundle, on_delete=models.CASCADE, related_name='images')
@@ -69,6 +66,7 @@ class BundleImage(models.Model):
 
     class Meta:
         ordering = ['order']
+
 
 class ScrapSubmission(models.Model):
     STATUS_CHOICES = [
@@ -76,11 +74,10 @@ class ScrapSubmission(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
-    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     item_name = models.CharField(max_length=200)
     description = models.TextField()
-    weight = models.DecimalField(max_digits=10, decimal_places=2, help_text='Weight in grams')
+    weight = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='scrap/')
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -90,9 +87,10 @@ class ScrapSubmission(models.Model):
     admin_notes = models.TextField(blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
-    
+
     def __str__(self):
         return f"{self.item_name} - {self.user.email}"
+
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -107,7 +105,6 @@ class Order(models.Model):
         ('esewa', 'eSewa'),
         ('bank', 'Bank Transfer'),
     ]
-    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -119,9 +116,10 @@ class Order(models.Model):
     payment_ref = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return f"Order #{self.id} - {self.user.email}"
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
@@ -129,7 +127,7 @@ class OrderItem(models.Model):
     bundle = models.ForeignKey(Bundle, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    
+
     def __str__(self):
         item = self.product or self.bundle
         return f"{item.name} x {self.quantity}"
