@@ -1,0 +1,62 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Orders{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Orders</h1>
+</div>
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="min-w-full divide-y divide-gray-200 text-sm">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">ID</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Customer</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Phone</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Amount</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Payment</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Status</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Date</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Action</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for order in orders %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-mono">#{{ order.id }}</td>
+        <td class="px-4 py-3">{{ order.user.first_name }} {{ order.user.last_name }}<br><span class="text-xs text-gray-400">{{ order.user.email }}</span></td>
+        <td class="px-4 py-3">{{ order.delivery_phone }}</td>
+        <td class="px-4 py-3 font-semibold">NPR {{ order.total_amount }}</td>
+        <td class="px-4 py-3">
+          <span class="px-2 py-1 rounded text-xs font-bold {% if order.payment_status == 'paid' %}bg-green-100 text-green-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+            {{ order.payment_method|upper }} / {{ order.payment_status }}
+          </span>
+        </td>
+        <td class="px-4 py-3">
+          <span class="px-2 py-1 rounded text-xs font-bold
+            {% if order.status == 'delivered' %}bg-green-100 text-green-700
+            {% elif order.status == 'shipped' %}bg-blue-100 text-blue-700
+            {% elif order.status == 'processing' %}bg-purple-100 text-purple-700
+            {% elif order.status == 'cancelled' %}bg-red-100 text-red-700
+            {% else %}bg-gray-100 text-gray-700{% endif %}">
+            {{ order.status|title }}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-gray-500">{{ order.created_at|date:"M d, Y" }}</td>
+        <td class="px-4 py-3">
+          <form method="post" action="{% url 'admin_panel:order_status' order.id %}" class="flex gap-2 items-center">
+            {% csrf_token %}
+            <select name="status" class="text-xs border rounded px-2 py-1">
+              {% for val, label in order.STATUS_CHOICES %}
+              <option value="{{ val }}" {% if order.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">Update</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">No orders yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
