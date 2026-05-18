@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header, Footer } from "../homepage";
-import { CheckCircle, Upload, MapPin, Scale, FileText, Package } from "lucide-react";
+import { CheckCircle, Upload, MapPin, Scale, FileText, Package, LocateFixed } from "lucide-react";
+import { validators } from "../../utils/validators";
 
-const API = "http://127.0.0.1:8000";
+import { BASE } from "../../services/base";
+const API = BASE;
+
+const ICON8 = "https://img.icons8.com/fluency/96";
 
 const METALS = [
-  { icon: "🔶", title: "Brass", nepali: "पित्तल", desc: "Old diyas, utensils, decorative pieces", rate: "NPR 180–220/kg", color: "from-yellow-50 to-amber-50", border: "border-amber-100", badge: "bg-amber-100 text-amber-700" },
-  { icon: "🟤", title: "Bronze", nepali: "काँसा", desc: "Idols, bells, ritual items, plates", rate: "NPR 200–250/kg", color: "from-orange-50 to-red-50", border: "border-orange-100", badge: "bg-orange-100 text-orange-700" },
-  { icon: "🟠", title: "Copper", nepali: "तामा", desc: "Kalash, tumblers, water pots", rate: "NPR 600–700/kg", color: "from-red-50 to-rose-50", border: "border-red-100", badge: "bg-red-100 text-red-700" },
+  { icon: `${ICON8}/gold.png`, title: "Brass", nepali: "पित्तल", desc: "Old diyas, utensils, decorative pieces", rate: "NPR 180–220/kg", color: "from-yellow-50 to-amber-50", border: "border-amber-100", badge: "bg-amber-100 text-amber-700" },
+  { icon: `${ICON8}/bronze.png`, title: "Bronze", nepali: "काँसा", desc: "Idols, bells, ritual items, plates", rate: "NPR 200–250/kg", color: "from-orange-50 to-red-50", border: "border-orange-100", badge: "bg-orange-100 text-orange-700" },
+  { icon: `${ICON8}/copper.png`, title: "Copper", nepali: "तामा", desc: "Kalash, tumblers, water pots", rate: "NPR 600–700/kg", color: "from-red-50 to-rose-50", border: "border-red-100", badge: "bg-red-100 text-red-700" },
 ];
 
 const STEPS = [
@@ -18,83 +22,159 @@ const STEPS = [
 ];
 
 const WHY_US = [
-  { icon: "💰", title: "Best Market Rate", sub: "We offer the highest buyback prices" },
-  { icon: "🚚", title: "Free Pickup", sub: "Doorstep collection at no extra cost" },
-  { icon: "⚡", title: "Instant Payment", sub: "Get paid same day of pickup" },
-  { icon: "♻️", title: "Eco Responsible", sub: "100% ethical metal recycling" },
+  { icon: `${ICON8}/money-bag.png`, title: "Best Market Rate", sub: "We offer the highest buyback prices" },
+  { icon: `${ICON8}/truck.png`, title: "Free Pickup", sub: "Doorstep collection at no extra cost" },
+  { icon: `${ICON8}/lightning-bolt.png`, title: "Instant Payment", sub: "Get paid same day of pickup" },
+  { icon: `${ICON8}/recycle-bin.png`, title: "Eco Responsible", sub: "100% ethical metal recycling" },
 ];
 
 const inputClass = "w-full px-4 py-4 rounded-2xl bg-[#FDFBF7] border border-[#E7E5E4] text-[#1B1917] placeholder-[#A8A29E] focus:outline-none focus:border-[#D97706]/70 focus:shadow-[0_0_0_3px_rgba(217,119,6,0.08)] transition-all font-medium text-sm";
 
+const DEFAULT_LAT = 27.7172;
+const DEFAULT_LNG = 85.324;
+
+// Reverse geocode using Nominatim (free, no API key)
+async function reverseGeocode(lat, lng) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+      { headers: { 'Accept-Language': 'en' } }
+    );
+    const data = await res.json();
+    return data.display_name || '';
+  } catch {
+    return '';
+  }
+}
+
 export default function ScrapSubmissionPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const leafletMapRef = useRef(null);
+
   const [formData, setFormData] = useState({ item_name: "", weight: "", description: "" });
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [location, setLocation] = useState({ lat: 27.7172, lng: 85.324, address: "" });
+  const [location, setLocation] = useState({ lat: DEFAULT_LAT, lng: DEFAULT_LNG, address: "" });
+  const [locating, setLocating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  // Load Leaflet CSS
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&libraries=places`;
-    script.async = true;
-    script.onload = initMap;
-    document.head.appendChild(script);
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
   }, []);
 
-  const initMap = () => {
-    const map = new window.google.maps.Map(document.getElementById("map"), {
-      center: { lat: 27.7172, lng: 85.324 }, zoom: 13,
-      styles: [
-        { elementType: "geometry", stylers: [{ color: "#f5f0e8" }] },
-        { elementType: "labels.text.fill", stylers: [{ color: "#6b5a3e" }] },
-        { featureType: "road", elementType: "geometry", stylers: [{ color: "#fff8ef" }] },
-        { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9d8e8" }] },
-      ],
-    });
+  // Init Leaflet map after component mounts
+  useEffect(() => {
+    let script = document.getElementById('leaflet-js');
+    const initMap = () => {
+      if (leafletMapRef.current) return; // already initialized
+      const L = window.L;
+      const map = L.map(mapRef.current).setView([DEFAULT_LAT, DEFAULT_LNG], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
 
-    const marker = new window.google.maps.Marker({
-      position: { lat: 27.7172, lng: 85.324 }, map, draggable: true,
-      icon: { path: window.google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: "#D97706", fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 3 },
-    });
+      const marker = L.marker([DEFAULT_LAT, DEFAULT_LNG], { draggable: true })
+        .addTo(map)
+        .bindTooltip('Drag me or click map to set location', { permanent: false, direction: 'top' });
 
-    const updateLocation = (lat, lng) => {
-      setLocation((prev) => ({ ...prev, lat, lng }));
-      new window.google.maps.Geocoder().geocode({ location: { lat, lng } }, (results, status) => {
-        if (status === "OK" && results[0]) setLocation({ lat, lng, address: results[0].formatted_address });
+      const onMove = async (lat, lng) => {
+        const address = await reverseGeocode(lat, lng);
+        setLocation({ lat, lng, address });
+      };
+
+      marker.on('dragend', () => {
+        const { lat, lng } = marker.getLatLng();
+        onMove(lat, lng);
       });
+      map.on('click', (e) => {
+        marker.setLatLng(e.latlng);
+        onMove(e.latlng.lat, e.latlng.lng);
+      });
+
+      leafletMapRef.current = map;
+      markerRef.current = marker;
+
+      // Auto-detect on load
+      detectLocation(map, marker, onMove);
     };
 
-    marker.addListener("dragend", () => { const p = marker.getPosition(); updateLocation(p.lat(), p.lng()); });
-    map.addListener("click", (e) => { marker.setPosition(e.latLng); updateLocation(e.latLng.lat(), e.latLng.lng()); });
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(({ coords }) => {
-        map.setCenter({ lat: coords.latitude, lng: coords.longitude });
-        marker.setPosition({ lat: coords.latitude, lng: coords.longitude });
-        updateLocation(coords.latitude, coords.longitude);
-      });
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'leaflet-js';
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = initMap;
+      document.head.appendChild(script);
+    } else if (window.L) {
+      initMap();
+    } else {
+      script.addEventListener('load', initMap);
     }
+  }, []);
+
+  const detectLocation = (map, marker, onMove) => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude: lat, longitude: lng } = coords;
+        map.setView([lat, lng], 16);
+        marker.setLatLng([lat, lng]);
+        onMove(lat, lng);
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { timeout: 8000 }
+    );
+  };
+
+  const handleLocateMe = () => {
+    if (!leafletMapRef.current || !markerRef.current) return;
+    detectLocation(leafletMapRef.current, markerRef.current, async (lat, lng) => {
+      const address = await reverseGeocode(lat, lng);
+      setLocation({ lat, lng, address });
+    });
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) { setImage(file); setImagePreview(URL.createObjectURL(file)); }
+    if (!file) return;
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) { setError('Please upload a JPEG, PNG, or WebP image.'); return; }
+    if (file.size > 10 * 1024 * 1024) { setError('Image must be under 10MB.'); return; }
+    setError('');
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    if (!formData.item_name.trim()) { setError("Item name is required."); return; }
+    const weightErr = validators.weight(formData.weight);
+    if (!formData.weight || Number(formData.weight) <= 0) { setError("Please enter a valid weight greater than 0."); return; }
+    if (weightErr) { setError(weightErr); return; }
+    if (!formData.description.trim()) { setError("Description is required."); return; }
+    if (formData.description.trim().length < 10) { setError("Description must be at least 10 characters."); return; }
+    if (!image) { setError("Please upload a photo of the scrap item."); return; }
+    setLoading(true);
     const data = new FormData();
     Object.entries(formData).forEach(([k, v]) => data.append(k, v));
     data.append("latitude", location.lat);
     data.append("longitude", location.lng);
     data.append("address", location.address);
-    if (image) data.append("image", image);
+    data.append("image", image);
     try {
       const response = await fetch(`${API}/api/scrap/submit/`, {
         method: "POST",
@@ -114,7 +194,7 @@ export default function ScrapSubmissionPage() {
     <div className="min-h-screen bg-[#F0EDE5] flex items-center justify-center">
       <div className="bg-white rounded-[32px] p-16 text-center shadow-[0_20px_60px_rgba(0,0,0,0.08)] border border-[#F5F5F4] max-w-md w-full mx-4">
         <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle className="w-12 h-12 text-green-500" /></div>
-        <h2 className="text-3xl font-extrabold text-[#1B1917] mb-3" style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}>धन्यवाद! 🙏</h2>
+        <h2 className="text-3xl font-extrabold text-[#1B1917] mb-3" style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}>धन्यवाद!</h2>
         <p className="text-[#78716C] font-medium text-lg mb-2">Submission received successfully!</p>
         <p className="text-[#A8A29E] text-sm">Our team will contact you shortly for pickup.</p>
       </div>
@@ -162,7 +242,7 @@ export default function ScrapSubmissionPage() {
                 <img src="https://images.unsplash.com/photo-1610444558552-32b00fdfbd88?w=800&h=600&fit=crop" alt="Sacred metals" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-4 -left-6 bg-white px-5 py-3 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.1)] border border-[#F5F5F4] flex items-center gap-3">
-                <span className="text-2xl">♻️</span>
+                <img src={`${ICON8}/recycle-bin.png`} alt="Recycle" className="w-7 h-7" />
                 <div>
                   <p className="font-extrabold text-[#1B1917] text-sm">100% Recycled</p>
                   <p className="text-[#78716C] text-xs font-medium">Ethical & responsible</p>
@@ -182,7 +262,7 @@ export default function ScrapSubmissionPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {METALS.map((m) => (
               <div key={m.title} className={`bg-gradient-to-br ${m.color} rounded-[24px] p-7 border ${m.border} hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-500 group`}>
-                <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-500">{m.icon}</div>
+                <img src={m.icon} alt={m.title} className="w-12 h-12 mb-4 group-hover:scale-110 transition-transform duration-500" />
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <h3 className="text-xl font-extrabold text-[#1B1917]">{m.title}</h3>
@@ -202,7 +282,9 @@ export default function ScrapSubmissionPage() {
               <h3 className="text-lg font-bold text-[#1B1917] mb-5" style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}>किन हामीलाई छान्ने?</h3>
               {WHY_US.map(({ icon, title, sub }) => (
                 <div key={title} className="flex items-start gap-4 py-4 border-b border-[#F5F5F4] last:border-0">
-                  <div className="w-11 h-11 bg-orange-50 rounded-2xl flex items-center justify-center text-xl shrink-0">{icon}</div>
+                  <div className="w-11 h-11 bg-orange-50 rounded-2xl flex items-center justify-center shrink-0">
+                    <img src={icon} alt={title} className="w-6 h-6" />
+                  </div>
                   <div>
                     <p className="font-bold text-[#1B1917] text-sm">{title}</p>
                     <p className="text-xs text-[#78716C] font-medium mt-0.5">{sub}</p>
@@ -211,7 +293,7 @@ export default function ScrapSubmissionPage() {
               ))}
             </div>
             <div className="bg-gradient-to-br from-[#D97706]/10 to-red-600/5 rounded-[24px] p-7 border border-orange-100">
-              <p className="text-2xl mb-2">📞</p>
+              <img src={`${ICON8}/phone.png`} alt="Phone" className="w-8 h-8 mb-2" />
               <h3 className="text-lg font-bold text-[#1B1917] mb-1">Need Help?</h3>
               <p className="text-sm text-[#78716C] font-medium mb-4">Call us before submitting if you have questions</p>
               <p className="font-extrabold text-[#D97706] text-lg">+977-1-4567890</p>
@@ -276,12 +358,26 @@ export default function ScrapSubmissionPage() {
                   </div>
                 </div>
 
+                {/* Map Section */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-bold text-[#57534E] mb-3"><MapPin className="w-4 h-4 text-[#D97706]" /> Pickup Location *</label>
-                  <div id="map" className="w-full h-72 rounded-2xl border border-[#E7E5E4] overflow-hidden shadow-sm" />
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="flex items-center gap-2 text-sm font-bold text-[#57534E]">
+                      <MapPin className="w-4 h-4 text-[#D97706]" /> Pickup Location *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleLocateMe}
+                      disabled={locating}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-[#D97706] hover:text-[#B45309] transition-colors disabled:opacity-50"
+                    >
+                      <LocateFixed className="w-3.5 h-3.5" />
+                      {locating ? "Detecting..." : "Use My Location"}
+                    </button>
+                  </div>
+                  <div ref={mapRef} className="w-full h-72 rounded-2xl border border-[#E7E5E4] overflow-hidden shadow-sm" style={{ zIndex: 0 }} />
                   <div className={`mt-3 flex items-start gap-2.5 px-4 py-3 rounded-2xl text-sm font-medium ${location.address ? "bg-orange-50 border border-orange-100 text-[#78716C]" : "bg-[#FDFBF7] border border-[#E7E5E4] text-[#A8A29E]"}`}>
                     <MapPin className={`w-4 h-4 mt-0.5 shrink-0 ${location.address ? "text-[#D97706]" : "text-[#A8A29E]"}`} />
-                    <span>{location.address || "Click on the map or drag the marker to set your pickup location"}</span>
+                    <span>{location.address || "📍 Drag the pin or click anywhere on the map to set your pickup location"}</span>
                   </div>
                 </div>
 
@@ -292,7 +388,7 @@ export default function ScrapSubmissionPage() {
                       <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                       Submitting Request...
                     </span>
-                  ) : "Submit Scrap Request 🙏"}
+                  ) : "Submit Scrap Request"}
                 </button>
               </form>
             </div>

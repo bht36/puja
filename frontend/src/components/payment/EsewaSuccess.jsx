@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { paymentAPI } from '../../services';
+import { paymentAPI } from '../../services/api';
 
 export default function EsewaSuccess() {
   const [searchParams] = useSearchParams();

@@ -8,3 +8,4 @@ export { Alert } from './Alert';
 export { Modal } from './Modal';
 export { Spinner } from './Spinner';
 export { Skeleton } from './Skeleton';
+export { ToastProvider, useToast } from './Toast';

@@ -1,24 +1,11 @@
-export const Skeleton = ({ 
-  variant = 'text',
-  width = 'w-full',
-  height,
-  className = ''
-}) => {
-  const variants = {
-    text: 'h-4 rounded',
-    title: 'h-8 rounded',
-    circle: 'rounded-full',
-    rect: 'rounded-xl'
+export const Skeleton = ({ variant = 'text', width = 'w-full', height, className = '' }) => {
+  const base = {
+    text:   'h-4 rounded-full',
+    title:  'h-7 rounded-full',
+    circle: 'rounded-full h-12 w-12',
+    rect:   'rounded-[24px] h-48',
   };
-
-  const defaultHeight = {
-    text: 'h-4',
-    title: 'h-8',
-    circle: 'h-12 w-12',
-    rect: 'h-48'
-  };
-
   return (
-    <div className={`bg-gray-200 animate-pulse ${variants[variant]} ${height || defaultHeight[variant]} ${width} ${className}`} />
+    <div className={`animate-shimmer ${base[variant]} ${height || ''} ${width} ${className}`} />
   );
 };
