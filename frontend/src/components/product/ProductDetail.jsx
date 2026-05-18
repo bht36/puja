@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-import { Heart, ShoppingCart, Star, Minus, Plus, Share2, Shield, Truck, RotateCcw } from "lucide-react";
+import { Heart, ShoppingCart, Star, Minus, Plus, Share, Shield, Truck, Recycle } from "lucide-react";
 import { Header, Footer } from "../homepage";
+import { useToast } from "../common/Toast";
+import { BASE } from "../../services/base";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { showToast } = useToast();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/products/${id}/`)
+    fetch(`${BASE}/products/${id}/`)
       .then(res => res.json())
       .then(data => {
         setProduct(data);
         setLoading(false);
       })
-      .catch(err => {
-        console.error('Error fetching product:', err);
+      .catch(() => {
         setLoading(false);
       });
   }, [id]);
@@ -36,15 +37,24 @@ export default function ProductDetail() {
       name: product.name,
       price: parseFloat(product.price),
       quantity: quantity,
-      image: product.image ? `http://127.0.0.1:8000${product.image}` : ''
+      image: product.image ? `${BASE.replace('/api', '')}${product.image}` : ''
     });
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 2000);
+    showToast("Added to your sacred cart");
   };
 
   const handleBuyNow = () => {
-    handleAddToCart();
-    navigate('/checkout');
+    navigate('/checkout', {
+      state: {
+        buyNowItem: {
+          id: product.id,
+          type: 'product',
+          name: product.name,
+          price: parseFloat(product.price),
+          quantity: quantity,
+          image: product.image ? `${BASE.replace('/api', '')}${product.image}` : ''
+        }
+      }
+    });
   };
 
   if (loading) {
@@ -65,7 +75,7 @@ export default function ProductDetail() {
       <div className="min-h-screen bg-[#F0EDE5]">
         <Header />
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <div className="text-6xl mb-4">🙏</div>
+          <img src="https://img.icons8.com/fluency/96/praying-hands.png" alt="Not found" className="w-16 h-16 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-[#1B1917] mb-4">Product not found</h1>
           <button onClick={() => navigate('/')} className="px-8 py-3 bg-[#D97706] hover:bg-[#B45309] text-white font-bold rounded-2xl transition-all shadow-md">
             Go Back Home
@@ -77,7 +87,7 @@ export default function ProductDetail() {
   }
 
   const productImages = product.image
-    ? [`http://127.0.0.1:8000${product.image}`]
+    ? [`${BASE.replace('/api', '')}${product.image}`]
     : ["https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=600&h=600&fit=crop"];
 
   return (
@@ -85,15 +95,6 @@ export default function ProductDetail() {
       <Header />
 
       {/* Add to cart notification */}
-      {showNotification && (
-        <div className="fixed top-4 right-4 z-50 bg-green-500/95 backdrop-blur-md text-white px-6 py-4 rounded-2xl shadow-[0_8px_30px_rgb(34,197,94,0.3)] flex items-center gap-3 border border-green-400">
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-            <ShoppingCart className="w-4 h-4" />
-          </div>
-          <span className="font-bold tracking-wide">Added to your sacred cart</span>
-        </div>
-      )}
-
       <div className="max-w-[1200px] mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-[#A8A29E] mb-8 font-medium">
@@ -233,3 +234,4 @@ export default function ProductDetail() {
     </div>
   );
 }
+

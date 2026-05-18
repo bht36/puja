@@ -2,7 +2,133 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { Header, Footer } from "../homepage";
-import { ShoppingCart, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Package } from "lucide-react";
+import { BASE } from "../../services/base";
+const MEDIA = BASE.replace('/api', '');
+
+const HeroSection = ({ bundle }) => (
+  <div className="space-y-4">
+    <div className="relative rounded-2xl overflow-hidden shadow-lg group">
+      {bundle.images?.length > 0 ? (
+        <img
+          src={`${MEDIA}${bundle.images[0].image}`}
+          alt={bundle.name}
+          className="w-full h-72 lg:h-96 object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+        />
+      ) : (
+        <div className="w-full h-72 lg:h-96 bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+          <img src="https://img.icons8.com/fluency/96/praying-hands.png" alt="Bundle" className="w-20 h-20" />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-6">
+        <span className="inline-block px-3 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full mb-2 uppercase tracking-wide">
+          Puja Bundle
+        </span>
+        <h1 className="text-2xl lg:text-3xl font-semibold text-white leading-tight">
+          {bundle.name}
+        </h1>
+      </div>
+    </div>
+
+    {bundle.images?.length > 1 && (
+      <div className="grid grid-cols-4 gap-2">
+        {bundle.images.slice(1, 5).map((img, idx) => (
+          <img
+            key={idx}
+            src={`${MEDIA}${img.image}`}
+            alt={`${bundle.name} ${idx + 2}`}
+            className="w-full h-20 object-cover rounded-xl border border-[#E7E5E4] hover:opacity-90 transition-opacity cursor-pointer"
+          />
+        ))}
+      </div>
+    )}
+
+    <div className="bg-white rounded-2xl shadow-sm border border-[#F5F5F4] p-6">
+      <h2 className="text-lg font-medium text-[#1B1917] mb-2">About This Set</h2>
+      <p className="text-sm text-[#57534E] leading-relaxed">{bundle.description}</p>
+    </div>
+  </div>
+);
+
+const BundleItemCard = ({ item, quantity, onUpdate }) => (
+  <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-[#F9F7F4] hover:bg-[#F5F5F4] transition-all duration-200 hover:shadow-sm">
+    <div className="flex-1 min-w-0">
+      <h4 className="font-medium text-[#1B1917] text-sm">{item.name}</h4>
+      {item.description && (
+        <p className="text-xs text-[#78716C] mt-0.5 line-clamp-1">{item.description}</p>
+      )}
+      <p className="text-sm font-semibold text-[#D97706] mt-1">NPR {item.price}</p>
+    </div>
+    <div className="flex items-center gap-2 bg-white border border-[#E7E5E4] rounded-xl p-1 shadow-sm shrink-0">
+      <button
+        onClick={() => onUpdate(item.id, -1)}
+        className="w-7 h-7 rounded-lg bg-[#F5F5F4] hover:bg-[#E7E5E4] flex items-center justify-center text-[#57534E] transition-colors active:scale-95"
+      >
+        <Minus className="w-3.5 h-3.5" />
+      </button>
+      <span className="w-7 text-center font-semibold text-[#1B1917] text-sm">{quantity}</span>
+      <button
+        onClick={() => onUpdate(item.id, 1)}
+        className="w-7 h-7 rounded-lg bg-orange-50 hover:bg-orange-500 hover:text-white text-[#D97706] flex items-center justify-center transition-colors active:scale-95"
+      >
+        <Plus className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  </div>
+);
+
+const PriceCard = ({ total, selectedCount, onAddToCart, onBuyNow }) => (
+  <div className="bg-white rounded-2xl shadow-md border border-[#F5F5F4] p-6 sticky top-24">
+    <div className="flex justify-between items-center pb-5 mb-5 border-b border-[#F5F5F4]">
+      <div>
+        <p className="text-xs text-[#A8A29E] uppercase tracking-wider font-medium mb-1">Total Price</p>
+        <p className="text-3xl font-bold text-[#D97706]">NPR {total.toFixed(2)}</p>
+      </div>
+      <div className="text-right">
+        <p className="text-xs text-[#A8A29E] uppercase tracking-wider font-medium mb-1">Selected</p>
+        <p className="text-2xl font-bold text-red-500">{selectedCount}</p>
+      </div>
+    </div>
+    <div className="space-y-3">
+      <button
+        onClick={onAddToCart}
+        disabled={selectedCount === 0}
+        className="w-full bg-red-500 hover:bg-red-600 disabled:bg-[#E7E5E4] disabled:text-[#A8A29E] disabled:cursor-not-allowed text-white py-3 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
+      >
+        <ShoppingCart className="w-4 h-4" />
+        Add to Cart
+      </button>
+      <button
+        onClick={onBuyNow}
+        disabled={selectedCount === 0}
+        className="w-full border border-[#E7E5E4] hover:bg-[#F5F5F4] disabled:opacity-40 disabled:cursor-not-allowed text-[#1B1917] py-3 rounded-xl font-medium text-sm transition-all duration-200 active:scale-[0.98]"
+      >
+        Buy Now
+      </button>
+    </div>
+  </div>
+);
+
+const ItemList = ({ items, itemQuantities, onUpdate }) => (
+  <div className="bg-white rounded-2xl shadow-sm border border-[#F5F5F4] p-6">
+    <div className="flex items-center gap-2 mb-4">
+      <Package className="w-5 h-5 text-[#D97706]" />
+      <h3 className="text-lg font-medium text-[#1B1917]">Bundle Items</h3>
+      <span className="ml-auto text-xs text-[#A8A29E] font-medium">{items?.length} items</span>
+    </div>
+    <div className="space-y-2">
+      {items?.map(item => (
+        <BundleItemCard
+          key={item.id}
+          item={item}
+          quantity={itemQuantities[item.id] || 0}
+          onUpdate={onUpdate}
+        />
+      ))}
+    </div>
+  </div>
+);
 
 export default function BundleDetailPage() {
   const { id } = useParams();
@@ -13,64 +139,48 @@ export default function BundleDetailPage() {
   const [itemQuantities, setItemQuantities] = useState({});
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/bundles/${id}/`)
+    fetch(`${BASE}/bundles/${id}/`)
       .then(res => res.json())
       .then(data => {
         setBundle(data);
         const quantities = {};
-        data.items?.forEach(item => {
-          quantities[item.id] = 1;
-        });
+        data.items?.forEach(item => { quantities[item.id] = 1; });
         setItemQuantities(quantities);
         setLoading(false);
       })
-      .catch(err => {
-        console.error('Error fetching bundle:', err);
-        setLoading(false);
-      });
+      .catch(() => { setLoading(false); });
   }, [id]);
 
   const updateQuantity = (itemId, change) => {
-    setItemQuantities(prev => ({
-      ...prev,
-      [itemId]: Math.max(0, (prev[itemId] || 0) + change)
-    }));
+    setItemQuantities(prev => ({ ...prev, [itemId]: Math.max(0, (prev[itemId] || 0) + change) }));
   };
 
   const calculateTotal = () => {
     if (!bundle?.items) return 0;
-    return bundle.items.reduce((sum, item) => 
-      sum + (parseFloat(item.price) * (itemQuantities[item.id] || 0)), 0
-    );
+    return bundle.items.reduce((sum, item) => sum + (parseFloat(item.price) * (itemQuantities[item.id] || 0)), 0);
   };
 
-  const getSelectedCount = () => {
-    return Object.values(itemQuantities).reduce((sum, qty) => sum + qty, 0);
-  };
+  const getSelectedCount = () => Object.values(itemQuantities).reduce((sum, qty) => sum + qty, 0);
 
-  const handleAddToCart = () => {
-    bundle.items?.forEach(item => {
-      const qty = itemQuantities[item.id] || 0;
-      if (qty > 0) {
-        addToCart({
-          id: item.id,
-          type: 'bundle-item',
-          name: `${bundle.name} - ${item.name}`,
-          price: parseFloat(item.price),
-          quantity: qty,
-          image: bundle.images?.[0]?.image ? `http://127.0.0.1:8000${bundle.images[0].image}` : ''
-        });
-      }
-    });
-    navigate('/checkout');
-  };
+  const bundleCartItem = () => ({
+    id: bundle.id,
+    type: 'bundle',
+    name: bundle.name,
+    price: calculateTotal(),
+    quantity: 1,
+    image: bundle.images?.[0]?.image ? `${MEDIA}${bundle.images[0].image}` : ''
+  });
+
+  const handleAddToCart = () => addToCart(bundleCartItem());
+
+  const handleBuyNow = () => navigate('/checkout', { state: { buyNowItem: bundleCartItem() } });
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F0EDE5] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F9F7F4] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D97706] mx-auto"></div>
-          <p className="mt-4 text-[#78716C] font-semibold tracking-wide">पवित्र प्याकेज लोड हुँदैछ...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-amber-500 border-t-transparent mx-auto" />
+          <p className="mt-4 text-sm text-[#78716C] font-medium">Loading bundle...</p>
         </div>
       </div>
     );
@@ -78,12 +188,12 @@ export default function BundleDetailPage() {
 
   if (!bundle) {
     return (
-      <div className="min-h-screen bg-[#F0EDE5]">
+      <div className="min-h-screen bg-[#F9F7F4]">
         <Header />
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-[#1B1917] mb-4">पूजा सेट फेला परेन (Bundle not found)</h1>
-          <button onClick={() => navigate('/categories')} className="px-6 py-3 bg-[#D97706] hover:bg-[#B45309] text-white font-bold rounded-xl transition-all shadow-md">
-            पछाडि जानुहोस् (Go Back)
+          <h1 className="text-2xl font-semibold text-[#1B1917] mb-4">Bundle not found</h1>
+          <button onClick={() => navigate('/categories')} className="px-6 py-3 bg-orange-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-all">
+            Go Back
           </button>
         </div>
         <Footer />
@@ -92,118 +202,36 @@ export default function BundleDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F0EDE5]" style={{fontFamily: 'Inter, Noto Sans, sans-serif'}}>
+    <div className="min-h-screen bg-[#F9F7F4]" style={{ fontFamily: 'Inter, sans-serif' }}>
       <Header />
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-xs text-[#A8A29E] mb-6 font-medium">
+          <button onClick={() => navigate('/')} className="hover:text-[#D97706] transition-colors">Home</button>
+          <span>/</span>
+          <button onClick={() => navigate('/categories')} className="hover:text-[#D97706] transition-colors">Categories</button>
+          <span>/</span>
+          <span className="text-[#1B1917]">{bundle.name}</span>
+        </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left: Images & Info */}
-          <div>
-            <div className="relative rounded-[32px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.06)] mb-6">
-              {bundle.images && bundle.images.length > 0 ? (
-                <img 
-                  src={`http://127.0.0.1:8000${bundle.images[0].image}`} 
-                  alt={bundle.name} 
-                  className="w-full h-80 lg:h-96 object-cover" 
-                />
-              ) : (
-                <div className="w-full h-80 lg:h-96 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-                  <span className="text-white text-8xl drop-shadow-md">🙏</span>
-                </div>
-              )}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-8">
-                <h1 className="text-3xl lg:text-4xl font-extrabold text-white tracking-tight" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>{bundle.name}</h1>
-              </div>
-            </div>
+          <HeroSection bundle={bundle} />
 
-            {bundle.images && bundle.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2 lg:gap-3 mb-6">
-                {bundle.images.slice(1, 5).map((img, idx) => (
-                  <img 
-                    key={idx}
-                    src={`http://127.0.0.1:8000${img.image}`} 
-                    alt={`${bundle.name} ${idx + 2}`}
-                    className="w-full h-20 lg:h-24 object-cover rounded-2xl shadow-sm border border-white/50"
-                  />
-                ))}
-              </div>
-            )}
-
-            <div className="bg-white rounded-[24px] p-8 shadow-sm border border-[#F5F5F4]">
-              <h2 className="text-xl font-bold text-[#1B1917] mb-4" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>सेटको बारेमा (About This Set)</h2>
-              <p className="text-[#57534E] text-base leading-relaxed font-medium">{bundle.description}</p>
-            </div>
-          </div>
-
-          {/* Right: Items Selection */}
           <div className="space-y-6">
-            {/* Price Summary */}
-            <div className="bg-white rounded-[24px] p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sticky top-24 border border-[#F5F5F4]">
-              <div className="flex justify-between items-end mb-8 border-b border-[#F5F5F4] pb-6">
-                <div>
-                  <p className="text-[#A8A29E] text-xs font-bold uppercase tracking-wider mb-2">कुल रकम (Total Price)</p>
-                  <p className="text-4xl lg:text-5xl font-extrabold text-[#D97706] tracking-tight">NPR {calculateTotal().toFixed(2)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[#A8A29E] text-xs font-bold uppercase tracking-wider mb-2">छानिएका सामग्री (Selected)</p>
-                  <p className="text-3xl font-extrabold text-red-600">{getSelectedCount()}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <button 
-                  onClick={handleAddToCart}
-                  disabled={getSelectedCount() === 0}
-                  className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white py-4.5 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-[0_8px_20px_rgb(239,68,68,0.2)] hover:shadow-[0_8px_30px_rgb(239,68,68,0.3)] hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Add to Cart
-                </button>
-                <button 
-                  disabled={getSelectedCount() === 0}
-                  className="w-full bg-white border-2 border-red-100 hover:border-red-600 hover:text-red-700 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-[#1B1917] py-4 rounded-2xl font-bold text-lg transition-all"
-                >
-                  Buy Now
-                </button>
-              </div>
-            </div>
-
-            {/* Bundle Items */}
-            <div className="bg-white rounded-[24px] p-6 lg:p-8 shadow-sm border border-[#F5F5F4]">
-              <h3 className="text-xl font-bold text-[#1B1917] mb-5" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>सामग्रीहरूको सूची (Bundle Items)</h3>
-              <div className="space-y-3">
-                {bundle.items?.map(item => (
-                  <div key={item.id} className="p-4 rounded-2xl border border-[#E7E5E4] hover:border-orange-300 hover:bg-[#FDFBF7] transition-all duration-300 group">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-[#1B1917] text-base group-hover:text-red-600 transition-colors" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>{item.name}</h4>
-                        <p className="text-xs text-[#78716C] mt-1 line-clamp-2 leading-relaxed">{item.description}</p>
-                        <p className="text-sm font-extrabold text-[#D97706] mt-2 tracking-tight">NPR {item.price}</p>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 bg-white border border-[#E7E5E4] rounded-xl p-1.5 shadow-sm">
-                        <button
-                          onClick={() => updateQuantity(item.id, -1)}
-                          className="w-8 h-8 rounded-lg bg-[#F5F5F4] hover:bg-gray-200 flex items-center justify-center text-[#57534E] transition-colors"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="w-8 text-center font-bold text-[#1B1917] text-base">{itemQuantities[item.id] || 0}</span>
-                        <button
-                          onClick={() => updateQuantity(item.id, 1)}
-                          className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-500 hover:text-white text-red-600 flex items-center justify-center transition-colors"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <PriceCard
+              total={calculateTotal()}
+              selectedCount={getSelectedCount()}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
+            />
+            <ItemList
+              items={bundle.items}
+              itemQuantities={itemQuantities}
+              onUpdate={updateQuantity}
+            />
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );
