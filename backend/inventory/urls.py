@@ -4,6 +4,8 @@ from . import views
 app_name = 'admin_panel'
 
 urlpatterns = [
+    path('login/', views.admin_login, name='login'),
+    path('logout/', views.admin_logout, name='logout'),
     path('', views.dashboard, name='dashboard'),
     path('products/', views.products_list, name='products'),
     path('products/create/', views.product_create, name='product_create'),
@@ -29,5 +31,5 @@ urlpatterns = [
     path('orders/', views.orders_list, name='orders'),
     path('orders/<int:order_id>/status/', views.order_update_status, name='order_status'),
     path('reviews/', views.reviews_list, name='reviews'),
-    path('reviews/<int:review_id>/approve/', views.review_approve, name='review_approve'),
+    path('reviews/<int:review_id>/delete/', views.review_delete, name='review_delete'),
 ]

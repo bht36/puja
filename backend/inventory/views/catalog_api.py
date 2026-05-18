@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 from ..models import ProductGrid, Category, Product, Bundle, ScrapSubmission
@@ -24,7 +25,10 @@ def api_categories(request):
 def api_products(request):
     grid_id = request.GET.get('grid')
     qs = Product.objects.filter(is_active=True, product_grid_id=grid_id) if grid_id else Product.objects.filter(is_active=True)
-    return Response(ProductSerializer(qs, many=True).data)
+    paginator = PageNumberPagination()
+    paginator.page_size = 20
+    page = paginator.paginate_queryset(qs, request)
+    return paginator.get_paginated_response(ProductSerializer(page, many=True).data)
 
 
 @api_view(['GET'])
@@ -36,7 +40,11 @@ def api_product_detail(request, product_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def api_bundles(request):
-    return Response(BundleSerializer(Bundle.objects.filter(is_active=True), many=True).data)
+    qs = Bundle.objects.filter(is_active=True)
+    paginator = PageNumberPagination()
+    paginator.page_size = 20
+    page = paginator.paginate_queryset(qs, request)
+    return paginator.get_paginated_response(BundleSerializer(page, many=True).data)
 
 
 @api_view(['GET'])
@@ -51,15 +59,30 @@ def api_scrap_submit(request):
     for field in ['item_name', 'description', 'weight']:
         if not request.data.get(field):
             return Response({'error': f'{field} is required'}, status=status.HTTP_400_BAD_REQUEST)
-    if not request.FILES.get('image'):
+    try:
+        weight = float(request.data['weight'])
+    except (ValueError, TypeError):
+        return Response({'error': 'Weight must be a valid number.'}, status=status.HTTP_400_BAD_REQUEST)
+    if weight <= 0:
+        return Response({'error': 'Weight must be greater than 0.'}, status=status.HTTP_400_BAD_REQUEST)
+    description = request.data.get('description', '').strip()
+    if len(description) < 10:
+        return Response({'error': 'Description must be at least 10 characters.'}, status=status.HTTP_400_BAD_REQUEST)
+    image = request.FILES.get('image')
+    if not image:
         return Response({'error': 'image is required'}, status=status.HTTP_400_BAD_REQUEST)
+    if image.size > 10 * 1024 * 1024:
+        return Response({'error': 'Image must be under 10MB.'}, status=status.HTTP_400_BAD_REQUEST)
+    allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if image.content_type not in allowed_types:
+        return Response({'error': 'Only JPEG, PNG, or WebP images are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
     try:
         scrap = ScrapSubmission.objects.create(
             user=request.user,
             item_name=request.data['item_name'],
-            description=request.data['description'],
-            weight=request.data['weight'],
-            image=request.FILES['image'],
+            description=description,
+            weight=weight,
+            image=image,
             latitude=request.data.get('latitude'),
             longitude=request.data.get('longitude'),
             address=request.data.get('address', ''),
@@ -76,7 +99,7 @@ def api_search(request):
     if not q:
         return Response([])
     products = Product.objects.filter(name__icontains=q, is_active=True).values('id', 'name', 'price')[:8]
-    bundles = Bundle.objects.filter(name__icontains=q, is_active=True).values('id', 'name')[:4]
+    bundles = Bundle.objects.filter(name__icontains=q, is_active=True).prefetch_related('products')[:4]
     results = [{'id': p['id'], 'name': p['name'], 'price': str(p['price']), 'type': 'product'} for p in products]
-    results += [{'id': b['id'], 'name': b['name'], 'type': 'bundle'} for b in bundles]
+    results += [{'id': b.id, 'name': b.name, 'price': str(b.total_price()), 'type': 'bundle'} for b in bundles]
     return Response(results)

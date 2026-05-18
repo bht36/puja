@@ -2,11 +2,31 @@ import json
 from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.db import models
 from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from authentication.models import User
+
+
+def admin_login(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_panel:dashboard')
+    error = None
+    if request.method == 'POST':
+        user = authenticate(request, username=request.POST.get('email'), password=request.POST.get('password'))
+        if user and user.is_staff:
+            auth_login(request, user)
+            return redirect(request.GET.get('next', '/admin/'))
+        error = 'Invalid credentials or insufficient permissions.'
+    return render(request, 'admin_panel/login.html', {'error': error})
+
+
+def admin_logout(request):
+    auth_logout(request)
+    return redirect('/admin/login/')
 from ..models import Product, ProductGrid, Category, Bundle, BundleImage, ScrapSubmission, Order, Review
 from .decorators import staff_required
 
@@ -27,6 +47,7 @@ def dashboard(request):
         'total_users': User.objects.count(),
         'recent_orders': Order.objects.select_related('user').order_by('-created_at')[:5],
         'sales_data': json.dumps(sales_data),
+        'low_stock_products': Product.objects.filter(stock__lte=models.F('reorder_threshold'), is_active=True).order_by('stock'),
     })
 
 
@@ -85,6 +106,7 @@ def product_create(request):
                 price=request.POST['price'],
                 product_grid_id=request.POST.get('product_grid') or None,
                 stock=request.POST.get('stock', 0),
+                reorder_threshold=request.POST.get('reorder_threshold', 5),
             )
             if request.FILES.get('image'):
                 product.image = request.FILES['image']
@@ -106,6 +128,7 @@ def product_edit(request, product_id):
             product.price = request.POST['price']
             product.product_grid_id = request.POST.get('product_grid') or None
             product.stock = request.POST.get('stock', 0)
+            product.reorder_threshold = request.POST.get('reorder_threshold', 5)
             if request.FILES.get('image'):
                 product.image = request.FILES['image']
             product.save()
@@ -246,8 +269,10 @@ def scrap_update(request, scrap_id):
         try:
             scrap.status = request.POST['status']
             scrap.offered_price = request.POST.get('offered_price') or None
+            scrap.final_weight = request.POST.get('final_weight') or None
+            scrap.payment_amount = request.POST.get('payment_amount') or None
             scrap.admin_notes = request.POST.get('admin_notes', '')
-            if scrap.status in ['approved', 'rejected']:
+            if scrap.status in ['approved', 'rejected', 'completed']:
                 scrap.reviewed_at = timezone.now()
             scrap.save()
 
@@ -265,6 +290,19 @@ def scrap_update(request, scrap_id):
                     f"Dear {scrap.user.first_name},\n\nYour scrap submission \"{scrap.item_name}\" could not be accepted.\n"
                     + (f"Reason: {scrap.admin_notes}\n" if scrap.admin_notes else "")
                     + "\nFeel free to submit again.\n\nThank you,\nPuja Pasal Team",
+                    settings.DEFAULT_FROM_EMAIL, [scrap.user.email], fail_silently=True,
+                )
+            elif scrap.status == 'completed':
+                send_mail(
+                    'Scrap Buyback Completed – Puja Pasal',
+                    f"Dear {scrap.user.first_name},\n\n"
+                    f"Your scrap buyback for \"{scrap.item_name}\" has been completed.\n\n"
+                    f"--- RECEIPT ---\n"
+                    f"Item: {scrap.item_name}\n"
+                    f"Final Weight: {scrap.final_weight} grams\n"
+                    f"Payment Made: Rs. {scrap.payment_amount}\n"
+                    + (f"Notes: {scrap.admin_notes}\n" if scrap.admin_notes else "")
+                    + "\nThank you for choosing Puja Pasal!\n\nPuja Pasal Team",
                     settings.DEFAULT_FROM_EMAIL, [scrap.user.email], fail_silently=True,
                 )
 
@@ -285,7 +323,6 @@ def user_create(request):
     if request.method == 'POST':
         try:
             user = User.objects.create_user(
-                username=request.POST['email'].split('@')[0],
                 email=request.POST['email'],
                 password=request.POST['password'],
                 first_name=request.POST.get('first_name', ''),
@@ -293,6 +330,7 @@ def user_create(request):
                 phone=request.POST.get('phone', ''),
             )
             user.is_active = request.POST.get('is_active') == 'on'
+            user.is_verified = True  # admin-created users are pre-verified
             user.save()
             messages.success(request, 'User created successfully!')
             return redirect('admin_panel:users')
@@ -307,7 +345,6 @@ def user_edit(request, user_id):
     if request.method == 'POST':
         try:
             user.email = request.POST['email']
-            user.username = user.email.split('@')[0]
             user.first_name = request.POST.get('first_name', '')
             user.last_name = request.POST.get('last_name', '')
             user.phone = request.POST.get('phone', '')
@@ -341,7 +378,7 @@ def user_view(request, user_id):
 @staff_required
 def orders_list(request):
     orders = Order.objects.select_related('user').prefetch_related('items').filter(
-        Q(payment_method='cod') | Q(payment_status='paid')
+        Q(payment_method='cod') | Q(payment_method='bank') | Q(payment_status='paid')
     ).order_by('-created_at')
     return render(request, 'admin_panel/orders.html', {'orders': orders})
 
