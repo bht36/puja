@@ -1,8 +1,7 @@
 Django==5.2.7
-djangorestframework
-django-cors-headers
-python-dotenv
-djangorestframework-simplejwt
-psycopg2-binary
-python-docx
-Pillow
+djangorestframework==3.16.1
+django-cors-headers==4.9.0
+python-dotenv==1.2.1
+djangorestframework-simplejwt==5.5.1
+psycopg2-binary==2.9.11
+Pillow==12.1.0
