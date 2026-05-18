@@ -36,6 +36,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     product_grid = models.ForeignKey(ProductGrid, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     stock = models.IntegerField(default=0)
+    reorder_threshold = models.IntegerField(default=5)
     image = models.ImageField(upload_to='products/')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -73,6 +74,7 @@ class ScrapSubmission(models.Model):
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     item_name = models.CharField(max_length=200)
@@ -84,6 +86,8 @@ class ScrapSubmission(models.Model):
     address = models.CharField(max_length=500, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     offered_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    final_weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     admin_notes = models.TextField(blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -114,6 +118,8 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cod')
     payment_status = models.CharField(max_length=20, default='unpaid')
     payment_ref = models.CharField(max_length=200, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -130,7 +136,8 @@ class OrderItem(models.Model):
 
     def __str__(self):
         item = self.product or self.bundle
-        return f"{item.name} x {self.quantity}"
+        name = item.name if item else "Unknown"
+        return f"{name} x {self.quantity}"
 
 
 class Review(models.Model):

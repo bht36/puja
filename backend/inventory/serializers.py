@@ -13,7 +13,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     grid_title = serializers.CharField(source='product_grid.title', read_only=True)
-    
+
     class Meta:
         model = Product
         fields = ['id', 'name', 'description', 'price', 'product_grid', 'grid_title', 'stock', 'image', 'is_active']
@@ -56,7 +56,7 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['id', 'user_name', 'total_amount', 'status', 'delivery_address',
                   'delivery_city', 'delivery_phone', 'payment_method', 'payment_status',
-                  'items', 'created_at', 'updated_at']
+                  'latitude', 'longitude', 'items', 'created_at', 'updated_at']
 
 class ReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
