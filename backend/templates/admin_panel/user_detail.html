@@ -74,7 +74,8 @@
             {% if user.address %}
             <div class="mb-8">
                 <h3 class="text-sm font-semibold text-gray-500 mb-2">Address</h3>
-                <p class="text-lg text-textmain">{{ user.address }}</p>
+                <p class="text-lg text-textmain mb-3">{{ user.address }}{% if user.city %}, {{ user.city }}{% endif %}</p>
+                <div id="user-map" class="w-full h-56 rounded-xl border border-gray-200 overflow-hidden"></div>
             </div>
             {% endif %}
 
@@ -90,3 +91,33 @@
     </div>
 </div>
 {% endblock %}
+
+
+{% if user.address %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const address = "{{ user.address|escapejs }}{% if user.city %}, {{ user.city|escapejs }}{% endif %}, Nepal";
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`, {
+        headers: { 'Accept-Language': 'en' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        const el = document.getElementById('user-map');
+        if (!data.length || !el) return;
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        const map = L.map(el).setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        L.marker([lat, lng]).addTo(map).bindPopup(address).openPopup();
+    })
+    .catch(() => {
+        const el = document.getElementById('user-map');
+        if (el) el.style.display = 'none';
+    });
+});
+</script>
+{% endif %}

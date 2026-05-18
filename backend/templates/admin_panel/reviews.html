@@ -1,0 +1,43 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Reviews{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Reviews</h1>
+</div>
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="min-w-full divide-y divide-gray-200 text-sm">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Customer</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Order</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Rating</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Comment</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Date</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Action</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for review in reviews %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3">{{ review.user.first_name }} {{ review.user.last_name }}<br><span class="text-xs text-gray-400">{{ review.user.email }}</span></td>
+        <td class="px-4 py-3 font-mono">#{{ review.order.id }}</td>
+        <td class="px-4 py-3">
+          <span class="text-yellow-500 font-bold">{{ review.rating }}★</span>
+        </td>
+        <td class="px-4 py-3 max-w-xs text-gray-600">{{ review.comment|truncatechars:100 }}</td>
+        <td class="px-4 py-3 text-gray-500">{{ review.created_at|date:"M d, Y" }}</td>
+        <td class="px-4 py-3">
+          <form method="post" action="{% url 'admin_panel:review_delete' review.id %}">
+            {% csrf_token %}
+            <button type="submit" class="text-xs bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+              onclick="return confirm('Delete this review?')">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No reviews yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

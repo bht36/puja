@@ -42,6 +42,10 @@
         </td>
         <td class="px-4 py-3 text-gray-500">{{ order.created_at|date:"M d, Y" }}</td>
         <td class="px-4 py-3">
+          {% if order.latitude and order.longitude %}
+          <a href="https://www.openstreetmap.org/?mlat={{ order.latitude }}&mlon={{ order.longitude }}&zoom=16"
+             target="_blank" class="text-xs text-blue-600 hover:underline block mb-1">📍 View Map</a>
+          {% endif %}
           <form method="post" action="{% url 'admin_panel:order_status' order.id %}" class="flex gap-2 items-center">
             {% csrf_token %}
             <select name="status" class="text-xs border rounded px-2 py-1">

@@ -4,6 +4,21 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
+<!-- Low Stock Alert -->
+{% if low_stock_products %}
+<div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-8">
+    <h3 class="text-red-700 font-semibold mb-3">⚠ Low Stock Alert ({{ low_stock_products|length }} product{{ low_stock_products|length|pluralize }})</h3>
+    <div class="space-y-2">
+        {% for p in low_stock_products %}
+        <div class="flex justify-between items-center text-sm">
+            <span class="font-medium text-red-800">{{ p.name }}</span>
+            <span class="text-red-600 font-bold">{{ p.stock }} left (threshold: {{ p.reorder_threshold }})</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
