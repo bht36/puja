@@ -82,10 +82,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const resetPassword = async (uid, token, passwords) => {
+  const resetPassword = async (data) => {
     try {
       setError(null);
-      await authAPI.resetPassword(uid, token, passwords);
+      await authAPI.resetPassword(data);
       return { success: true };
     } catch (err) {
       setError(err.message);
@@ -97,10 +97,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       const response = await authAPI.updateProfile(profileData);
-      
+
       // Update user data in context with the response
       setUser(response.user);
-      
+
       return { success: true, data: response };
     } catch (err) {
       setError(err.message);
@@ -108,11 +108,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithTokens = (tokens, userData) => {
+    localStorage.setItem("access_token", tokens.access);
+    localStorage.setItem("refresh_token", tokens.refresh);
+    setUser(userData);
+  };
+
   const value = {
     user,
     loading,
     error,
     register,
+    loginWithTokens,
     login,
     logout,
     forgotPassword,

@@ -1,18 +1,31 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
+  const { user } = useAuth();
+  const cartKey = user ? `cart_${user.id}` : null;
+
   const [cartItems, setCartItems] = useState(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return [];
-    const saved = localStorage.getItem("cart");
+    if (!cartKey) return [];
+    const saved = localStorage.getItem(cartKey);
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Reload cart when user changes (login/logout/switch)
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
+    if (!cartKey) {
+      setCartItems([]);
+      return;
+    }
+    const saved = localStorage.getItem(cartKey);
+    setCartItems(saved ? JSON.parse(saved) : []);
+  }, [cartKey]);
+
+  useEffect(() => {
+    if (cartKey) localStorage.setItem(cartKey, JSON.stringify(cartItems));
+  }, [cartItems, cartKey]);
 
   const addToCart = (item) => {
     setCartItems((prev) => {
@@ -33,39 +46,19 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = (id, type, quantity) => {
-    if (quantity < 1) {
-      removeFromCart(id, type);
-      return;
-    }
+    if (quantity < 1) { removeFromCart(id, type); return; }
     setCartItems((prev) =>
-      prev.map((i) =>
-        i.id === id && i.type === type ? { ...i, quantity } : i
-      )
+      prev.map((i) => i.id === id && i.type === type ? { ...i, quantity } : i)
     );
   };
 
   const clearCart = () => setCartItems([]);
 
-  const getCartTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  };
-
-  const getCartCount = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  };
+  const getCartTotal = () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const getCartCount = () => cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        getCartTotal,
-        getCartCount,
-      }}
-    >
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, getCartTotal, getCartCount }}>
       {children}
     </CartContext.Provider>
   );
