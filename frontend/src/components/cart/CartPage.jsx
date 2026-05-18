@@ -61,7 +61,7 @@ export default function CartPage() {
                       {item.name}
                     </h3>
                     <p className="text-xs font-bold text-[#A8A29E] uppercase tracking-wider mb-2">
-                      {item.type === 'bundle-item' ? 'Bundle Item' : 'Product'}
+                      {item.type === 'bundle' ? 'Bundle' : 'Product'}
                     </p>
                     <div className="flex items-baseline gap-1">
                       <span className="text-xs font-bold text-[#D97706]">NPR</span>
