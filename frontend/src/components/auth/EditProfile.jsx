@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "../common/Button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { validateForm, isValid } from "../../utils/validators";
 
 export default function EditProfile() {
   const { user, updateProfile } = useAuth();
@@ -19,80 +20,43 @@ export default function EditProfile() {
   const [profileImage, setProfileImage] = useState(null);
   const [emailChanged, setEmailChanged] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProfileData(prev => ({ ...prev, [name]: value }));
-    
-    if (name === 'email' && value !== user.email) {
-      setEmailChanged(true);
-    } else if (name === 'email' && value === user.email) {
-      setEmailChanged(false);
-    }
+    setFieldErrors(prev => ({ ...prev, [name]: "" }));
+    if (name === 'email') setEmailChanged(value !== user.email);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-      if (!validTypes.includes(file.type)) {
-        alert('Please select a valid image file (JPEG, PNG, or GIF)');
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-      if (file.size > maxSize) {
-        alert('Image size should be less than 5MB');
-        return;
-      }
-      
-      console.log('Selected image:', file);
-      setProfileImage(file);
-    }
+    if (!file) return;
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) { setError('Please select a valid image file (JPEG, PNG, or GIF)'); return; }
+    if (file.size > 5 * 1024 * 1024) { setError('Image size should be less than 5MB'); return; }
+    setError("");
+    setProfileImage(file);
   };
 
   const handleSave = async () => {
+    setError("");
+    const errs = validateForm(profileData, ['first_name', 'last_name', 'email', 'phone', 'city', 'postal_code'], ['first_name', 'last_name']);
+    if (profileData.gender && !['male', 'female', 'other'].includes(profileData.gender)) {
+      errs.gender = 'Please select a valid gender.';
+    }
+    if (!isValid(errs)) { setFieldErrors(errs); return; }
     setLoading(true);
     try {
-      // Prepare form data
       const formData = { ...profileData };
-      
-      // Add profile image if selected
-      if (profileImage) {
-        console.log('Adding profile image to form data:', profileImage);
-        formData.profile_image = profileImage;
-      }
-      
-      // Handle email change
-      if (emailChanged) {
-        formData.new_email = profileData.email;
-      }
-      
-      console.log('Sending form data:', formData);
-      
-      // Update profile data in context
+      if (profileImage) formData.profile_image = profileImage;
+      if (emailChanged) formData.new_email = profileData.email;
       const result = await updateProfile(formData);
-      
-      console.log('Update result:', result);
-      
-      if (result.success) {
-        console.log('Profile updated successfully');
-        
-        if (emailChanged) {
-          console.log('Email verification required');
-        }
-        
-        // Redirect to home page
-        navigate('/');
-      } else {
-        console.error('Failed to update profile:', result.error);
-        alert('Failed to update profile: ' + result.error);
-      }
-    } catch (error) {
-      console.error('Error saving profile:', error);
-      alert('Error saving profile: ' + error.message);
+      if (result.success) navigate('/');
+      else setError(result.error || 'Failed to update profile.');
+    } catch (err) {
+      setError(err.message || 'Error saving profile.');
     } finally {
       setLoading(false);
     }
@@ -118,6 +82,10 @@ export default function EditProfile() {
               </svg>
             </button>
           </div>
+
+          {error && (
+            <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-medium">{error}</div>
+          )}
 
           {/* Profile Picture Section */}
           <div className="flex items-center space-x-6 mb-8">
@@ -173,6 +141,7 @@ export default function EditProfile() {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C28142] focus:border-transparent"
                 />
+                {fieldErrors.first_name && <p className="text-xs text-red-500 mt-1">{fieldErrors.first_name}</p>}
               </div>
 
               <div>
@@ -197,6 +166,7 @@ export default function EditProfile() {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C28142] focus:border-transparent"
                 />
+                {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
               </div>
 
               <div>
@@ -208,6 +178,7 @@ export default function EditProfile() {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C28142] focus:border-transparent"
                 />
+                {fieldErrors.phone && <p className="text-xs text-red-500 mt-1">{fieldErrors.phone}</p>}
               </div>
 
               <div>
@@ -222,6 +193,7 @@ export default function EditProfile() {
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
+                {fieldErrors.gender && <p className="text-xs text-red-500 mt-1">{fieldErrors.gender}</p>}
                 </select>
               </div>
             </div>
@@ -261,6 +233,7 @@ export default function EditProfile() {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C28142] focus:border-transparent"
                 />
+                {fieldErrors.postal_code && <p className="text-xs text-red-500 mt-1">{fieldErrors.postal_code}</p>}
               </div>
             </div>
           </div>

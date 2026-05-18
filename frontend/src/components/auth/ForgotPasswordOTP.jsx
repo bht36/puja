@@ -1,95 +1,86 @@
-import { useState, useRef } from "react";
-import { Button } from "../common/Button";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authAPI } from "../../services/api";
+import AuthLayout from "./shared/AuthLayout";
+import OTPInput from "./shared/OTPInput";
+import { AuthButton, MessageAlert } from "./shared/AuthButton";
+
+const RESEND_SECONDS = 60;
 
 export default function ForgotPasswordOTP() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || "";
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+
+  const [otp, setOtp] = useState(Array(6).fill(""));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const inputRefs = useRef([]);
+  const [resendTimer, setResendTimer] = useState(RESEND_SECONDS);
+  const [resending, setResending] = useState(false);
 
-  const handleChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return;
-    
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
+  useEffect(() => {
+    if (!email) navigate("/forgot-password");
+  }, [email]);
 
-    if (value && index < 5) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const t = setTimeout(() => setResendTimer(p => p - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendTimer]);
 
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setError("");
-    const otpCode = otp.join("");
-    
-    if (otpCode.length !== 6) {
-      setError("Please enter all 6 digits");
-      return;
-    }
-
-    setLoading(true);
+    const code = otp.join("");
+    if (code.length !== 6) { setError("Please enter all 6 digits."); return; }
+    setError(""); setLoading(true);
     try {
-      await authAPI.verifyResetOTP({ email, otp_code: otpCode });
-      navigate("/reset-password-new", { state: { email } });
+      const res = await authAPI.verifyResetOTP({ email, otp_code: code });
+      navigate("/reset-password-new", { state: { email, reset_token: res.reset_token } });
     } catch (err) {
-      setError(err.message || "Invalid OTP");
+      setError(err.message || "Invalid or expired OTP.");
     }
     setLoading(false);
   };
 
-  if (!email) {
-    navigate("/forgot-password");
-    return null;
-  }
+  const handleResend = async () => {
+    setResending(true); setError("");
+    try {
+      await authAPI.forgotPassword(email);
+      setResendTimer(RESEND_SECONDS);
+      setOtp(Array(6).fill(""));
+    } catch (err) {
+      setError(err.message || "Failed to resend.");
+    }
+    setResending(false);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Verify OTP
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Enter the 6-digit code sent to {email}
+    <AuthLayout title="Enter verification code" subtitle={`A 6-digit code was sent to ${email}`}>
+      {error && <MessageAlert type="error" message={error} />}
+
+      <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+        <OTPInput value={otp} onChange={setOtp} />
+
+        <AuthButton loading={loading} type="submit">
+          {loading ? "Verifying..." : "Verify Code"}
+        </AuthButton>
+      </form>
+
+      <div className="text-center mt-5">
+        {resendTimer > 0 ? (
+          <p className="text-sm text-[#78716C]">
+            Resend in <span className="font-semibold text-[#C28142]">{resendTimer}s</span>
           </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          {error && (
-            <div className="text-red-500 text-center text-sm">{error}</div>
-          )}
-
-          <div className="flex justify-center gap-2">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => (inputRefs.current[index] = el)}
-                type="text"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-12 text-center text-xl font-bold border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ))}
-          </div>
-
-          <Button type="submit" disabled={loading} fullWidth>{loading ? "Verifying..." : "Verify OTP"}</Button>
-        </form>
+        ) : (
+          <button
+            onClick={handleResend}
+            disabled={resending}
+            className="text-sm text-[#C28142] font-semibold hover:text-[#A66B35] transition-colors disabled:opacity-50"
+          >
+            {resending ? "Sending..." : "Resend code"}
+          </button>
+        )}
       </div>
-    </div>
+    </AuthLayout>
   );
 }

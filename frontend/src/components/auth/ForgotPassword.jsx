@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { Button, Input, Alert, Card } from "../common";
+import AuthLayout from "./shared/AuthLayout";
+import { InputField } from "./shared/FormFields";
+import { AuthButton, MessageAlert } from "./shared/AuthButton";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -10,54 +12,40 @@ export default function ForgotPassword() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { setError("Enter a valid email address."); return; }
+    setError(""); setLoading(true);
     const result = await forgotPassword(email);
-    if (result.success) {
-      navigate("/forgot-password-otp", { state: { email } });
-    } else {
-      setError(result.error);
-    }
+    if (result.success) navigate("/forgot-password-otp", { state: { email } });
+    else setError(result.error);
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F0EDE5] py-12 px-4">
-      <Card className="max-w-md w-full space-y-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Forgot Password</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Enter your email to receive a verification code
-          </p>
-        </div>
+    <AuthLayout title="Forgot password?" subtitle="We'll send a verification code to your email">
+      {error && <MessageAlert type="error" message={error} />}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <Alert type="error" message={error} onClose={() => setError("")} />}
+      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <InputField
+          label="Email address"
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          required
+        />
 
-          <Input
-            label="Email"
-            type="email"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-          />
+        <AuthButton loading={loading} type="submit">
+          {loading ? "Sending..." : "Send Verification Code"}
+        </AuthButton>
+      </form>
 
-          <Button type="submit" disabled={loading} fullWidth>
-            {loading ? "Sending..." : "Send verification code"}
-          </Button>
-
-          <div className="text-center">
-            <Link to="/login" className="text-sm font-medium text-red-500 hover:text-red-600">
-              Back to login
-            </Link>
-          </div>
-        </form>
-      </Card>
-    </div>
+      <p className="text-center text-sm text-[#78716C] mt-6">
+        <Link to="/login" className="text-[#C28142] font-semibold hover:text-[#A66B35] transition-colors">
+          ← Back to sign in
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }
