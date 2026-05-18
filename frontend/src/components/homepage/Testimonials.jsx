@@ -11,55 +11,72 @@ export default function Testimonials() {
   const [testimonials, setTestimonials] = useState(staticFallback);
 
   useEffect(() => {
-    reviewAPI.getAll().then(data => {
-      if (data.length > 0) setTestimonials(data);
-    }).catch(() => {});
+    reviewAPI.getAll().then(data => { const list = Array.isArray(data) ? data : (data.results ?? []); if (list.length > 0) setTestimonials(list); }).catch(() => {});
   }, []);
 
   return (
-    <section className="bg-[#FDFBF7] py-24 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-64 h-64 border-[1px] border-orange-200/40 rounded-full opacity-30 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 border-[1px] border-red-200/30 rounded-full opacity-30 translate-y-1/3 -translate-x-1/3 pointer-events-none"></div>
+    <section className="bg-[#FDFBF7] py-20 relative overflow-hidden">
+      <div className="max-w-[1200px] mx-auto px-4">
 
-      <div className="max-w-[1240px] mx-auto px-4 relative z-10">
-        <div className="text-center mb-16" style={{fontFamily: 'Noto Sans Devanagari, sans-serif'}}>
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="h-[1px] w-8 bg-black/10"></div>
-            <span className="text-red-600 text-sm font-bold tracking-[0.2em] uppercase">प्रतिक्रिया</span>
-            <div className="h-[1px] w-8 bg-black/10"></div>
+        <div className="text-center mb-12" style={{ fontFamily: 'Noto Sans Devanagari, sans-serif' }}>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="h-[1px] w-8 bg-red-400" />
+            <span className="text-red-600 text-xs font-bold tracking-[0.15em] uppercase">प्रतिक्रिया</span>
+            <div className="h-[1px] w-8 bg-red-400" />
           </div>
-          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1B1917] mb-4 tracking-tight">
+          {/* Star summary */}
+          <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-1.5 rounded-full mb-4">
+            <span className="text-amber-500 text-sm">★★★★★</span>
+            <span className="text-sm font-bold text-[#1B1917]">4.9 / 5</span>
+            <span className="text-xs text-[#78716C]">· Rated by 10,000+ families</span>
+          </div>
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1B1917] tracking-tight">
             ग्राहकहरूको <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D97706] to-red-600">प्रतिक्रिया</span>
           </h2>
-          <p className="text-[#78716C] font-medium text-lg">What Our Customers Say</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {testimonials.slice(0, 6).map((t) => (
-            <div key={t.id}
-              className="bg-white p-8 lg:p-10 rounded-[24px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#F5F5F4] hover:shadow-[0_20px_40px_rgba(217,119,6,0.08)] hover:-translate-y-2 transition-all duration-500 relative group">
-              <div className="absolute top-6 right-8 opacity-[0.03] text-8xl font-serif text-[#C28142] group-hover:opacity-5 transition-opacity duration-500 pointer-events-none">"</div>
-              <div className="flex mb-6 gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className={`w-5 h-5 ${i < t.rating ? 'text-[#D97706]' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                  </svg>
-                ))}
-              </div>
-              <p className="text-[#57534E] mb-8 text-lg leading-relaxed font-medium relative z-10">"{t.comment}"</p>
-              <div className="flex items-center gap-4 pt-6 border-t border-[#F5F5F4]">
-                <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-[#D97706] font-bold text-xl border border-orange-100 uppercase">
-                  {t.user_name?.charAt(0)}
-                </div>
-                <div>
-                  <p className="font-extrabold text-[#1B1917] text-[15px]">{t.user_name}</p>
-                  {t.created_at && <p className="text-[#A8A29E] text-xs font-bold uppercase tracking-wider mt-0.5">{new Date(t.created_at).toLocaleDateString()}</p>}
-                </div>
-              </div>
+        {/* Desktop grid */}
+        <div className="hidden md:grid grid-cols-3 gap-6">
+          {testimonials.slice(0, 6).map(t => (
+            <TestimonialCard key={t.id} t={t} />
+          ))}
+        </div>
+
+        {/* Mobile: horizontal scroll */}
+        <div className="flex md:hidden gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4">
+          {testimonials.slice(0, 6).map(t => (
+            <div key={t.id} className="snap-start shrink-0 w-[80vw]">
+              <TestimonialCard t={t} />
             </div>
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function TestimonialCard({ t }) {
+  return (
+    <div className="bg-white p-7 rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-[#F5F5F4] hover:shadow-[0_20px_40px_rgba(217,119,6,0.08)] hover:-translate-y-1.5 transition-all duration-500">
+      <div className="flex mb-4 gap-0.5">
+        {[...Array(5)].map((_, i) => (
+          <svg key={i} className={`w-4 h-4 ${i < t.rating ? 'text-[#D97706]' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        ))}
+      </div>
+      <p className="text-[#57534E] text-sm leading-relaxed font-medium mb-6">
+        <span className="text-[#D97706] text-lg font-serif">"</span>{t.comment}"
+      </p>
+      <div className="flex items-center gap-3 pt-4 border-t border-[#F5F5F4]">
+        <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-[#D97706] font-bold border border-orange-100 uppercase text-sm">
+          {t.user_name?.charAt(0)}
+        </div>
+        <div>
+          <p className="font-bold text-[#1B1917] text-sm">{t.user_name}</p>
+          {t.created_at && <p className="text-[#A8A29E] text-xs">{new Date(t.created_at).toLocaleDateString()}</p>}
+        </div>
+      </div>
+    </div>
   );
 }
